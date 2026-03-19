@@ -6,12 +6,23 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct iLifeDesignApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            TabView{
+               
+                VorhabenListeView()
+                    .tabItem {Label("Liste", systemImage: "list.dash")}
+                PhasenListeView()
+                    .tabItem{Label("Phasen", systemImage: "infinity")}
+                LebensbereicheView()
+                    .tabItem{Label("Lebensbereiche", systemImage: "circle.hexagonpath")}
+            }
+          // .tabViewStyle(.page)
         }
+        .modelContainer(for: VorhabenModel.self)
     }
 }
