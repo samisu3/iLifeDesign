@@ -21,11 +21,9 @@ struct iLifeDesignApp: App {
         ])
 
         // Aktuelle Schema-Version als String (bei jedem inkompatiblen Umbau erhöhen)
-        let currentSchemaVersion = "v7"
+        let currentSchemaVersion = "v8"
         let schemaVersionKey = "swiftdata_schema_version"
 
-        // Falls die gespeicherte Version nicht übereinstimmt, Store vorab löschen.
-        // So erreicht ModelContainer nie die fehlerhafte Datei und wirft keinen Abort.
         if UserDefaults.standard.string(forKey: schemaVersionKey) != currentSchemaVersion {
             print("⚠️ Schema-Version geändert – SwiftData Store wird zurückgesetzt.")
             deleteSwiftDataStore()
@@ -34,17 +32,8 @@ struct iLifeDesignApp: App {
 
         do {
             let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-            let container = try ModelContainer(for: schema, configurations: config)
-
-            // Standard-Daten beim ersten Start anlegen
-            Task { @MainActor in
-                setupStandardLebensbereiche(context: container.mainContext)
-                setupStandardPhasen(context: container.mainContext)
-            }
-
-            return container
+            return try ModelContainer(for: schema, configurations: config)
         } catch {
-            // Fallback: sollte nach dem Store-Reset eigentlich nicht mehr auftreten.
             print("❌ ModelContainer konnte nicht erstellt werden: \(error)")
             fatalError("ModelContainer-Fehler nach Store-Reset: \(error)")
         }
@@ -52,16 +41,33 @@ struct iLifeDesignApp: App {
 
     var body: some Scene {
         WindowGroup {
-            TabView {
-                VorhabenListeView()
-                    .tabItem { Label("Liste", systemImage: "list.dash") }
-                PhasenListeView()
-                    .tabItem { Label("Phasen", systemImage: "infinity") }
-                LebensbereicheView()
-                    .tabItem { Label("Lebensbereiche", systemImage: "circle.hexagonpath") }
-            }
+            AppRootView()
         }
         .modelContainer(container)
+    }
+}
+
+// MARK: - Root View mit Setup
+
+/// Separater View, damit modelContext beim onAppear zuverlässig verfügbar ist.
+struct AppRootView: View {
+    @Environment(\.modelContext) private var modelContext
+
+    var body: some View {
+        TabView {
+            VorhabenListeView()
+                .tabItem { Label("Liste", systemImage: "list.dash") }
+            PhasenListeView()
+                .tabItem { Label("Phasen", systemImage: "infinity") }
+            LebensbereicheView()
+                .tabItem { Label("Lebensbereiche", systemImage: "circle.hexagonpath") }
+        }
+        .onAppear {
+            // Standard-Daten genau einmal beim ersten Start anlegen.
+            // Diese Funktionen prüfen intern ob Daten schon vorhanden sind.
+            setupStandardLebensbereiche(context: modelContext)
+            setupStandardPhasen(context: modelContext)
+        }
     }
 }
 
