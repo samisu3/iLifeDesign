@@ -84,8 +84,8 @@ struct AufgabenListeView: View {
                         let zielIndex = nächsteUnbeantwortetIndex ?? 0
                         aktiverIndex = zielIndex
                         // 1. Warten bis fullScreenCover vollständig eingeblendet ist
-                        // 2. Scrollen
-                        // 3. Warten bis Scroll fertig
+                        // 2. Scrollen zur Ziel-Frage
+                        // 3. Warten bis Scroll fertig und Karte gerendert
                         // 4. Fokus setzen → Tastatur öffnet sich
                         Task {
                             try? await Task.sleep(for: .milliseconds(450))
@@ -238,7 +238,7 @@ struct FrageCard: View {
     @Bindable var frage: AufgabeModel
     let index: Int
     let istAktiv: Bool
-    /// Neuer Date-Stempel von außen → Fokus jetzt setzen
+    /// Neuer Date-Stempel von AufgabenListeView → Fokus jetzt ins Textfeld setzen
     let fokusZeitpunkt: Date?
     let phaseColor: Color
     let istAbschlussfrage: Bool
@@ -338,7 +338,7 @@ struct FrageCard: View {
                             .stroke(borderColor, lineWidth: borderWidth)
                     }
             }
-            // Fokus setzen sobald AufgabenListeView den Stempel setzt
+            // Fokus setzen sobald AufgabenListeView den Zeitstempel setzt
             .onChange(of: fokusZeitpunkt) { _, zeitpunkt in
                 guard zeitpunkt != nil, !istBeantwortet else { return }
                 textFeldFokussiert = true
