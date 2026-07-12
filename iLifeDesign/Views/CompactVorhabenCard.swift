@@ -27,16 +27,16 @@ struct CompactVorhabenCard: View {
                 ZStack {
                     Circle()
                         .fill(displayColor.opacity(0.15))
-                        .frame(width: 30, height: 30)
+                        .frame(width: 40, height: 40)
                     Image(systemName: vorhaben.viewIcon.isEmpty ? "target" : vorhaben.viewIcon)
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(displayColor)
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
                     HStack {
                         Text(vorhaben.bezeichnung)
-                            .font(.subheadline)
+                            .font(.title3)
                             .fontWeight(.medium)
                             .foregroundStyle(.primary)
                             .lineLimit(1)
@@ -64,13 +64,12 @@ struct CompactVorhabenCard: View {
                                     .lineLimit(1)
                             }
                         } else {
-                            HStack(spacing: 3) {
+                            HStack(spacing: 4) {
                                 Image(systemName: vorhaben.viewLebensbereichIcon)
-                                    .font(.system(size: 9))
                                     .foregroundStyle(vorhaben.viewLebensbereichFarbe)
                                 Text(vorhaben.viewLebensbereich)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(vorhaben.viewLebensbereichFarbe)
                                     .lineLimit(1)
                             }
                         }
@@ -94,18 +93,18 @@ struct CompactVorhabenCard: View {
                     HStack(spacing: 8) {
                         if phaseFertig {
                             Text("Phase abgeschlossen · Überarbeiten")
-                                .font(.caption)
+                                .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.green)
                         } else if let aufgabe = nächsteAufgabe {
                             Text(aufgabe.aufgabe)
-                                .font(.caption)
+                                .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.white)
                                 .lineLimit(1)
                         } else {
                             Text("Nächste Aktion")
-                                .font(.caption)
+                                .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.white)
                         }

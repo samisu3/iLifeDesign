@@ -36,30 +36,35 @@ struct PhasenListeView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if phasen.isEmpty {
-                    ContentUnavailableView(
-                        "Keine Phasen",
-                        systemImage: "infinity",
-                        description: Text("Die Phasen werden beim Start automatisch angelegt.")
-                    )
-                } else {
-                    ScrollView {
-                        LazyVStack(spacing: 16) {
-                            ForEach(sichtbarePhasen) { phase in
-                                PhasenGruppeView(phase: phase) {
-                                    bearbeitetePhase = phase
-                                } onNeuesVorhaben: {
-                                    let vorhaben = VorhabenModel(phase: phase.sort)
-                                    modelContext.insert(vorhaben)
-                                    addStandardAufgaben(vorhaben: vorhaben)
-                                    newVorhaben = vorhaben
-                                    isNewVorhaben = true
+            ZStack {
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
+
+                Group {
+                    if phasen.isEmpty {
+                        ContentUnavailableView(
+                            "Keine Phasen",
+                            systemImage: "infinity",
+                            description: Text("Die Phasen werden beim Start automatisch angelegt.")
+                        )
+                    } else {
+                        ScrollView {
+                            LazyVStack(spacing: 12) {
+                                ForEach(sichtbarePhasen) { phase in
+                                    PhasenGruppeView(phase: phase) {
+                                        bearbeitetePhase = phase
+                                    } onNeuesVorhaben: {
+                                        let vorhaben = VorhabenModel(phase: phase.sort)
+                                        modelContext.insert(vorhaben)
+                                        addStandardAufgaben(vorhaben: vorhaben)
+                                        newVorhaben = vorhaben
+                                        isNewVorhaben = true
+                                    }
                                 }
                             }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
                     }
                 }
             }
@@ -141,7 +146,7 @@ struct PhasenGruppeView: View {
                     // Icon
                     ZStack {
                         Circle()
-                            .fill(phase.viewFarbe.opacity(0.18))
+                            .fill(phase.viewFarbe.opacity(0.15))
                             .frame(width: 30, height: 30)
                         Image(systemName: phase.icon)
                             .font(.system(size: 14, weight: .medium))
@@ -152,8 +157,7 @@ struct PhasenGruppeView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
                             Text(phase.name)
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
+                                .fontWeight(.regular)
                                 .foregroundStyle(phase.viewFarbe)
                             Text("(\(vorhabens.count))")
                                 .font(.caption)
@@ -161,8 +165,8 @@ struct PhasenGruppeView: View {
                         }
                         if !phase.info.isEmpty {
                             Text(phase.info)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
+                                .font(.caption)
+                                .foregroundStyle(phase.viewFarbe)
                                 .lineLimit(1)
                         }
                     }
@@ -198,15 +202,15 @@ struct PhasenGruppeView: View {
                             .rotationEffect(.degrees(istAusgeklappt ? 0 : -90))
                     }
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
             }
             .buttonStyle(.plain)
 
             // MARK: Vorhaben-Liste
             if istAusgeklappt {
                 Divider()
-                    .padding(.horizontal, 14)
+                    .padding(.horizontal, 16)
 
                 if vorhabens.isEmpty {
                     HStack {
@@ -219,28 +223,26 @@ struct PhasenGruppeView: View {
                             .italic()
                     }
                     .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
+                    .padding(.vertical, 12)
                 } else {
-                    VStack(spacing: 6) {
+                    VStack(spacing: 8) {
                         ForEach(vorhabens) { vorhaben in
-                            VorhabenZeile(vorhaben: vorhaben, showPhase: false, phaseColor: phase.viewFarbe)
+                            NavigationLink {
+                                VorhabenEditor(vorhaben: vorhaben)
+                            } label: {
+                                VorhabenZeile(vorhaben: vorhaben, showPhase: false, phaseColor: phase.viewFarbe)
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
                 }
             }
         }
         .background {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(
-                            phase.viewFarbe.opacity(vorhabens.isEmpty ? 0.15 : 0.3),
-                            lineWidth: 1
-                        )
-                }
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(.systemBackground))
         }
     }
 }

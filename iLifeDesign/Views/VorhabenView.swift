@@ -82,7 +82,7 @@ struct VorhabenView: View {
                             .foregroundStyle(LebensbereicheColor[vorhaben.lebensbereich] ?? .gray)
                         Text(vorhaben.viewLebensbereich)
                             .fontWeight(.medium)
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(LebensbereicheColor[vorhaben.lebensbereich] ?? .gray)
                     }
                 }
             }
@@ -101,15 +101,15 @@ struct VorhabenView: View {
                 HStack {
                     HStack(spacing: 6) {
                         Text("Phase")
-                            .fontWeight(.semibold)
+                            .fontWeight(.regular)
                             .foregroundStyle(aktuellePhase?.viewFarbe ?? vorhaben.viewColor)
                         Text(aktuellePhase?.name ?? vorhaben.viewPhase)
-                            .fontWeight(.semibold)
+                            .fontWeight(.regular)
                             .foregroundStyle(aktuellePhase?.viewFarbe ?? vorhaben.viewColor)
                     }
                     Spacer()
                     Text("\(Int(gesamtFortschritt * 100))%")
-                        .fontWeight(.bold)
+                        .fontWeight(.regular)
                         .foregroundStyle(vorhaben.viewColor)
                 }
 
@@ -184,7 +184,8 @@ struct VorhabenView: View {
         .padding(16)
         .background {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
+                .fill(Color(.systemBackground))
+                //.fill(Color(.blue))
         }
         // fullScreenCover ausserhalb des NavigationLink-Kontexts —
         // sonst ist der onAppear-Timing in AufgabenListeView gestört

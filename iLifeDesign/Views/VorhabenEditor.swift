@@ -100,7 +100,7 @@ struct VorhabenEditor: View {
                                 Image(systemName: vorhaben.viewLebensbereichIcon)
                                     .foregroundStyle(vorhaben.viewLebensbereichFarbe)
                                 Text(vorhaben.viewLebensbereich.isEmpty ? "Wählen…" : vorhaben.viewLebensbereich)
-                                    .foregroundStyle(vorhaben.viewLebensbereich.isEmpty ? .secondary : .primary)
+                                    .foregroundStyle(vorhaben.viewLebensbereich.isEmpty ? .secondary : vorhaben.viewLebensbereichFarbe)
                             }
                         }
                     }
@@ -109,8 +109,9 @@ struct VorhabenEditor: View {
                     Text("Priorität & Lebensbereich")
                 }
 
-                // ── Aktuelle Phase ───────────────────────────────────────
+                // ── Aktuelle Phase & Nächste Aktion ─────────────────────
                 Section {
+                    // Phasen-Picker
                     Menu {
                         ForEach(verfügbarePhasen) { phase in
                             Button {
@@ -126,7 +127,7 @@ struct VorhabenEditor: View {
                                             .fontWeight(.medium)
                                         Text(phase.info)
                                             .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                            .foregroundStyle(phase.viewFarbe)
                                     }
                                     Spacer()
                                     if vorhaben.phase == phase.sort {
@@ -151,27 +152,33 @@ struct VorhabenEditor: View {
                             }
                             VStack(alignment: .leading, spacing: 1) {
                                 Text(aktuellePhase?.name ?? vorhaben.viewPhase)
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(farbe)
                                 Text(aktuellePhase?.info ?? vorhaben.viewPhaseInfo)
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(farbe)
                             }
                             Spacer()
                         }
                     }
                     .tint(.primary)
-                } header: {
+
+                    // Nächste Aktion – Zwischenzeile
                     HStack {
-                        Text("Aktuelle Phase")
+                        Text("Nächste Aktion")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .textCase(nil)
                         Spacer()
                         if vorhaben.viewAktuelleAufgabenAnzahl > 0 {
                             Text("\(vorhaben.viewAktuelleAufgabenAnzahlErledigt)/\(vorhaben.viewAktuelleAufgabenAnzahl)")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
                         }
                     }
-                }
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 0, trailing: 16))
 
-                // ── Nächste Aktion ───────────────────────────────────────
-                Section {
+                    // Nächste Aktion – Button
                     let phaseFertig = vorhaben.viewAktuelleAufgabenErledigt
                     let nächsteFrage = vorhaben.viewAktuellNächsteAufgabe
 
@@ -221,7 +228,7 @@ struct VorhabenEditor: View {
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
                 } header: {
-                    Text("Nächste Aktion")
+                    Text("Aktuelle Phase")
                 }
 
                 // ── Verlauf ──────────────────────────────────────────────

@@ -14,6 +14,7 @@ import SwiftData
 struct LebensbereicheView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \LebensbereichModel.sort) private var lebensbereiche: [LebensbereichModel]
+    @Query private var alleVorhaben: [VorhabenModel]
 
     @State private var newVorhaben = VorhabenModel()
     @State private var isNewVorhaben = false
@@ -28,7 +29,7 @@ struct LebensbereicheView: View {
             liste = lebensbereiche
         } else {
             liste = lebensbereiche.filter { bereich in
-                !(bereich.vorhaben?.isEmpty ?? true)
+                alleVorhaben.contains { $0.lebensbereichRef?.id == bereich.id }
             }
         }
         return liste.sorted {
