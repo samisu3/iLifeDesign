@@ -206,6 +206,7 @@ class VorhabenModel {
     /// Veraltetes Int-Feld – bleibt für Migration erhalten, wird aber nicht mehr aktiv genutzt.
     var lebensbereich: Int = 0
     /// Neue Beziehung zum LebensbereichModel
+    @Relationship(deleteRule: .nullify, inverse: \LebensbereichModel.vorhaben)
     var lebensbereichRef: LebensbereichModel?
     @Relationship(deleteRule: .cascade, inverse: \AufgabeModel.vorhaben)
     var aufgaben: [AufgabeModel]? = []

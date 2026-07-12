@@ -105,7 +105,6 @@ class LebensbereichModel {
     var sort: Int = 0
     var istAktiv: Bool = true
 
-    @Relationship(deleteRule: .nullify, inverse: \VorhabenModel.lebensbereichRef)
     var vorhaben: [VorhabenModel]? = []
 
     init(
