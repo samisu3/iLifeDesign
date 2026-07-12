@@ -26,7 +26,7 @@ struct LebensbereicheView: View {
         let liste = zeigeInaktive ? lebensbereiche : lebensbereiche.filter { $0.istAktiv }
         return liste.sorted {
             // Primär: Priorität absteigend, sekundär: Sort aufsteigend
-            if $0.priorität != $1.priorität { return $0.priorität > $1.priorität }
+            if $0.prioritaet != $1.prioritaet { return $0.prioritaet > $1.prioritaet }
             return $0.sort < $1.sort
         }
     }

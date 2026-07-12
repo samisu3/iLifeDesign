@@ -78,19 +78,19 @@ struct LebensbereichDefault {
     let beschreibung: String
     let icon: String
     let farbeID: String
-    let priorität: Int
+    let prioritaet: Int
 }
 
 let LebensbereichDefaults: [LebensbereichDefault] = [
-    LebensbereichDefault(sort: 0, name: "Gesundheit",     beschreibung: "Körper, Geist und Wohlbefinden", icon: "cross.fill",            farbeID: "green",  priorität: 3),
-    LebensbereichDefault(sort: 1, name: "Soziales",       beschreibung: "Freunde, Familie und Netzwerk",  icon: "person.2.fill",         farbeID: "orange", priorität: 3),
-    LebensbereichDefault(sort: 2, name: "Sicherheit",     beschreibung: "Finanzen, Schutz und Stabilität",icon: "shield.fill",           farbeID: "blue",   priorität: 3),
-    LebensbereichDefault(sort: 3, name: "Arbeit",         beschreibung: "Beruf, Karriere und Leistung",   icon: "briefcase.fill",        farbeID: "mint",   priorität: 3),
-    LebensbereichDefault(sort: 4, name: "Partnerschaft",  beschreibung: "Liebe, Beziehung und Intimität", icon: "heart.fill",            farbeID: "red",    priorität: 3),
-    LebensbereichDefault(sort: 5, name: "Wohnen",         beschreibung: "Zuhause, Umgebung und Raum",     icon: "house.fill",            farbeID: "brown",  priorität: 3),
-    LebensbereichDefault(sort: 6, name: "Entwicklung",    beschreibung: "Lernen, Wachstum und Bildung",   icon: "graduationcap.fill",    farbeID: "cyan",   priorität: 3),
-    LebensbereichDefault(sort: 7, name: "Hobby",          beschreibung: "Freizeit, Spass und Kreativität",icon: "gamecontroller.fill",   farbeID: "teal",   priorität: 3),
-    LebensbereichDefault(sort: 8, name: "Spiritualität",  beschreibung: "Sinn, Werte und innere Stärke",  icon: "leaf.fill",             farbeID: "purple", priorität: 3),
+    LebensbereichDefault(sort: 0, name: "Gesundheit",     beschreibung: "Körper, Geist und Wohlbefinden", icon: "cross.fill",            farbeID: "green",  prioritaet: 3),
+    LebensbereichDefault(sort: 1, name: "Soziales",       beschreibung: "Freunde, Familie und Netzwerk",  icon: "person.2.fill",         farbeID: "orange", prioritaet: 3),
+    LebensbereichDefault(sort: 2, name: "Sicherheit",     beschreibung: "Finanzen, Schutz und Stabilität",icon: "shield.fill",           farbeID: "blue",   prioritaet: 3),
+    LebensbereichDefault(sort: 3, name: "Arbeit",         beschreibung: "Beruf, Karriere und Leistung",   icon: "briefcase.fill",        farbeID: "mint",   prioritaet: 3),
+    LebensbereichDefault(sort: 4, name: "Partnerschaft",  beschreibung: "Liebe, Beziehung und Intimität", icon: "heart.fill",            farbeID: "red",    prioritaet: 3),
+    LebensbereichDefault(sort: 5, name: "Wohnen",         beschreibung: "Zuhause, Umgebung und Raum",     icon: "house.fill",            farbeID: "brown",  prioritaet: 3),
+    LebensbereichDefault(sort: 6, name: "Entwicklung",    beschreibung: "Lernen, Wachstum und Bildung",   icon: "graduationcap.fill",    farbeID: "cyan",   prioritaet: 3),
+    LebensbereichDefault(sort: 7, name: "Hobby",          beschreibung: "Freizeit, Spass und Kreativität",icon: "gamecontroller.fill",   farbeID: "teal",   prioritaet: 3),
+    LebensbereichDefault(sort: 8, name: "Spiritualität",  beschreibung: "Sinn, Werte und innere Stärke",  icon: "leaf.fill",             farbeID: "purple", prioritaet: 3),
 ]
 
 // MARK: - SwiftData Model
@@ -101,7 +101,7 @@ class LebensbereichModel {
     var beschreibung: String = ""
     var icon: String = "circle.fill"
     var farbeID: String = "blue"
-    var priorität: Int = 3
+    var prioritaet: Int = 3
     var sort: Int = 0
     var istAktiv: Bool = true
 
@@ -112,7 +112,7 @@ class LebensbereichModel {
         beschreibung: String = "",
         icon: String = "circle.fill",
         farbeID: String = "blue",
-        priorität: Int = 3,
+        prioritaet: Int = 3,
         sort: Int = 0,
         istAktiv: Bool = true
     ) {
@@ -120,7 +120,7 @@ class LebensbereichModel {
         self.beschreibung = beschreibung
         self.icon = icon
         self.farbeID = farbeID
-        self.priorität = priorität
+        self.prioritaet = prioritaet
         self.sort = sort
         self.istAktiv = istAktiv
     }
@@ -135,7 +135,7 @@ extension LebensbereichModel {
     }
 
     var viewPrioritätSterne: String {
-        String(repeating: "★", count: priorität) + String(repeating: "☆", count: 5 - priorität)
+        String(repeating: "★", count: prioritaet) + String(repeating: "☆", count: 5 - prioritaet)
     }
 
     var viewVorhabenAnzahl: Int {
@@ -159,7 +159,7 @@ func setupStandardLebensbereiche(context: ModelContext) {
             beschreibung: default_.beschreibung,
             icon: default_.icon,
             farbeID: default_.farbeID,
-            priorität: default_.priorität,
+            prioritaet: default_.prioritaet,
             sort: default_.sort
         )
         context.insert(bereich)

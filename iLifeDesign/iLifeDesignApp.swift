@@ -20,7 +20,7 @@ struct iLifeDesignApp: App {
         ])
 
         // Aktuelle Schema-Version als String (bei jedem inkompatiblen Umbau erhöhen)
-        let currentSchemaVersion = "v5"
+        let currentSchemaVersion = "v6"
         let schemaVersionKey = "swiftdata_schema_version"
 
         // Falls die gespeicherte Version nicht übereinstimmt, Store vorab löschen.

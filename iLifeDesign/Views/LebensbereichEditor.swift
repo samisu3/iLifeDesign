@@ -72,11 +72,11 @@ struct LebensbereichEditor: View {
                         HStack(spacing: 12) {
                             ForEach(1...5, id: \.self) { wert in
                                 Button {
-                                    bereich.priorität = wert
+                                    bereich.prioritaet = wert
                                 } label: {
-                                    Image(systemName: wert <= bereich.priorität ? "star.fill" : "star")
+                                    Image(systemName: wert <= bereich.prioritaet ? "star.fill" : "star")
                                         .font(.title2)
-                                        .foregroundStyle(wert <= bereich.priorität ? bereich.viewFarbe : .secondary)
+                                        .foregroundStyle(wert <= bereich.prioritaet ? bereich.viewFarbe : .secondary)
                                 }
                                 .buttonStyle(.plain)
                                 .frame(maxWidth: .infinity)
@@ -235,7 +235,7 @@ struct LebensbereichIconPicker: View {
         beschreibung: "Körper, Geist und Wohlbefinden",
         icon: "cross.fill",
         farbeID: "green",
-        priorität: 4
+        prioritaet: 4
     )
     container.mainContext.insert(bereich)
     return LebensbereichEditor(bereich: bereich)
