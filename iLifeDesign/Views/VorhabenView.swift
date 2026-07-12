@@ -14,13 +14,24 @@ struct VorhabenView: View {
     let vorhaben: VorhabenModel
 
     @State private var zeigeAufgaben = false
+    @Query(sort: \PhaseModel.sort) private var phasen: [PhaseModel]
 
-    /// Gesamtfortschritt: erledigte Aufgaben aller Phasen / alle Aufgaben
+    private var verfügbarePhasen: [PhaseModel] {
+        if !phasen.isEmpty { return phasen }
+        return PhaseDefaults.map {
+            PhaseModel(sort: $0.sort, name: $0.name, info: $0.info, icon: $0.icon, farbeID: $0.farbeID)
+        }
+    }
+
+    /// Gesamtfortschritt: abgeschlossene Phasen × 5 + erledigte Aufgaben aktueller Phase, geteilt durch Gesamtanzahl Aufgaben
     private var gesamtFortschritt: Double {
-        let alle = vorhaben.aufgaben?.count ?? 0
-        guard alle > 0 else { return 0 }
-        let erledigt = vorhaben.aufgaben?.filter { $0.erledigt }.count ?? 0
-        return Double(erledigt) / Double(alle)
+        let aufgabenProPhase = 5
+        let totalPhasen = verfügbarePhasen.count
+        guard totalPhasen > 0 else { return 0 }
+        let total = totalPhasen * aufgabenProPhase
+        let erledigteVorherigerPhasen = vorhaben.phase * aufgabenProPhase
+        let erledigteAktuellePhase = vorhaben.viewAktuelleAufgabenAnzahlErledigt
+        return Double(erledigteVorherigerPhasen + erledigteAktuellePhase) / Double(total)
     }
 
     var body: some View {
@@ -46,8 +57,8 @@ struct VorhabenView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text(vorhaben.bezeichnung)
-                            .font(.headline)
-                            .fontWeight(.bold)
+                            .font(.title3)
+                            .fontWeight(.medium)
                             .foregroundStyle(.primary)
                             .lineLimit(2)
 
@@ -58,19 +69,9 @@ struct VorhabenView: View {
                             HStack(spacing: 2) {
                                 ForEach(0...4, id: \.self) { star in
                                     Image(systemName: star <= vorhaben.priority ? "star.fill" : "star")
-                                        .font(.caption2)
+                                        .font(.caption)
                                         .foregroundStyle(star <= vorhaben.priority ? .orange : Color(.systemGray4))
                                 }
-                            }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background {
-                                Capsule()
-                                    .fill(.ultraThinMaterial)
-                                    .overlay {
-                                        Capsule()
-                                            .stroke(.orange.opacity(0.3), lineWidth: 1)
-                                    }
                             }
                         }
                     }
@@ -78,12 +79,10 @@ struct VorhabenView: View {
                     // Lebensbereich
                     HStack(spacing: 4) {
                         Image(systemName: vorhaben.viewLebensbereichIcon)
-                            .font(.caption)
                             .foregroundStyle(LebensbereicheColor[vorhaben.lebensbereich] ?? .gray)
                         Text(vorhaben.viewLebensbereich)
-                            .font(.caption)
                             .fontWeight(.medium)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.primary)
                     }
                 }
             }
@@ -91,41 +90,42 @@ struct VorhabenView: View {
             // Beschreibung
             if !vorhaben.beschreibung.isEmpty {
                 Text(vorhaben.beschreibung)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .lineLimit(2)
             }
 
             // ── Gesamtfortschritt: Phasen-Icons ────────────────────────
             VStack(alignment: .leading, spacing: 6) {
+                let aktuellePhase = verfügbarePhasen.first { $0.sort == vorhaben.phase }
                 HStack {
-                    Text("Gesamtfortschritt")
-                        .font(.caption2)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 6) {
+                        Text("Phase")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(aktuellePhase?.viewFarbe ?? vorhaben.viewColor)
+                        Text(aktuellePhase?.name ?? vorhaben.viewPhase)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(aktuellePhase?.viewFarbe ?? vorhaben.viewColor)
+                    }
                     Spacer()
-                    Text("Phase \(vorhaben.phase + 1) von 10 · \(Int(gesamtFortschritt * 100))%")
-                        .font(.caption2)
+                    Text("\(Int(gesamtFortschritt * 100))%")
                         .fontWeight(.bold)
                         .foregroundStyle(vorhaben.viewColor)
                 }
 
                 HStack(spacing: 4) {
-                    ForEach(0...9, id: \.self) { i in
-                        let farbe = PhaseColor[i] ?? .gray
-                        let icon  = VorhabenPhaseIcon[i] ?? "circle"
-                        let fortschritt: Double = i < vorhaben.phase ? 1.0
-                            : i == vorhaben.phase
+                    ForEach(verfügbarePhasen) { phase in
+                        let fortschritt: Double = phase.sort < vorhaben.phase ? 1.0
+                            : phase.sort == vorhaben.phase
                                 ? (vorhaben.viewAktuelleAufgabenAnzahl > 0
                                     ? Double(vorhaben.viewAktuelleAufgabenAnzahlErledigt) / Double(vorhaben.viewAktuelleAufgabenAnzahl)
                                     : 0)
                             : 0
 
                         PhasenIconSegment(
-                            icon: icon,
-                            farbe: farbe,
-                            istAktuell: i == vorhaben.phase,
+                            icon: phase.icon,
+                            farbe: phase.viewFarbe,
+                            istAktuell: phase.sort == vorhaben.phase,
                             fortschritt: fortschritt
                         )
                     }
@@ -141,32 +141,28 @@ struct VorhabenView: View {
                     zeigeAufgaben = true
                 } label: {
                     HStack(spacing: 10) {
-                        Image(systemName: fertig ? "checkmark.circle.fill" : "arrow.right.circle.fill")
-                            .font(.subheadline)
-                            .foregroundStyle(fertig ? .green : .white)
-
                         if fertig {
                             Text("Phase abgeschlossen · Überarbeiten")
-                                .font(.caption)
+                                .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.green)
                         } else if let frage = nächsteFrage {
                             Text(frage.aufgabe)
-                                .font(.caption)
+                                .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.white)
                                 .lineLimit(1)
                         } else {
                             Text("Nächste Aktion")
-                                .font(.caption)
+                                .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.white)
                         }
 
                         Spacer(minLength: 0)
 
-                        Image(systemName: "chevron.right")
-                            .font(.caption2.bold())
+                        Image(systemName: fertig ? "checkmark.circle.fill" : "chevron.right")
+                            .font(.caption.bold())
                             .foregroundStyle(fertig ? .green.opacity(0.7) : .white.opacity(0.7))
                     }
                     .padding(.horizontal, 14)
@@ -188,13 +184,10 @@ struct VorhabenView: View {
         .padding(16)
         .background {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(vorhaben.viewColor.opacity(0.3), lineWidth: 1)
-                }
+                .fill(Color(.secondarySystemBackground))
         }
-        .shadow(color: vorhaben.viewColor.opacity(0.1), radius: 8, x: 0, y: 4)
+        // fullScreenCover ausserhalb des NavigationLink-Kontexts —
+        // sonst ist der onAppear-Timing in AufgabenListeView gestört
         .fullScreenCover(isPresented: $zeigeAufgaben) {
             AufgabenListeView(vorhaben: vorhaben)
         }

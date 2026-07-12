@@ -13,12 +13,25 @@ struct AufgabenListeView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    // i = aktuelle Frage, auf der der Fokus liegt
-    @State private var i: Int = 0
+    // i = aktuelle Frage — direkt mit dem richtigen Startwert initialisiert
+    @State private var i: Int
+    // Fokus zentral hier verwaltet — welcher Index soll fokussiert sein
+    @FocusState private var fokusIndex: Int?
 
     private var fragen: [AufgabeModel] { vorhaben.viewAktuelleAufgaben }
-
     private var abschlussfrage: AufgabeModel? { fragen.last(where: { $0.istAbschlussfrage }) }
+
+    init(vorhaben: VorhabenModel) {
+        self.vorhaben = vorhaben
+        // Erste unbeantwortete Frage als Startwert — kein onAppear nötig
+        let aufgaben = vorhaben.aufgaben?
+            .filter { $0.phase == vorhaben.phase }
+            .sorted { $0.sort < $1.sort } ?? []
+        let startIndex = aufgaben.firstIndex {
+            $0.antwort.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        } ?? 0
+        _i = State(initialValue: startIndex)
+    }
 
     // MARK: - Body
 
@@ -30,7 +43,7 @@ struct AufgabenListeView: View {
 
                 ScrollViewReader { proxy in
                     ScrollView {
-                        LazyVStack(spacing: DesignSystem.Spacing.lg) {
+                        VStack(spacing: DesignSystem.Spacing.lg) {
                             headerSection
 
                             ForEach(Array(fragen.enumerated()), id: \.element.persistentModelID) { index, frage in
@@ -38,18 +51,25 @@ struct AufgabenListeView: View {
                                     frage: frage,
                                     index: index,
                                     istAktiv: i == index,
+                                    fokusIndex: $fokusIndex,
                                     phaseColor: vorhaben.viewColor,
                                     istAbschlussfrage: frage.istAbschlussfrage,
                                     onNext: {
                                         frage.erledigt = true
-                                        withAnimation(.spring(response: 0.35)) { i = index + 1 }
-                                        withAnimation { proxy.scrollTo(index + 1, anchor: .top) }
+                                        let next = index + 1
+                                        withAnimation(.spring(response: 0.35)) { i = next }
+                                        withAnimation { proxy.scrollTo(next, anchor: .top) }
+                                        // Fokus nach dem Scroll setzen — nicht gleichzeitig mit Animation
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                            fokusIndex = next
+                                        }
                                     },
                                     onNächstePhase: { handleNächstePhase() }
                                 )
                                 .id(index)
                                 .onTapGesture {
                                     withAnimation(.spring(response: 0.3)) { i = index }
+                                    fokusIndex = index
                                 }
                             }
 
@@ -59,12 +79,20 @@ struct AufgabenListeView: View {
                         .padding(.vertical, DesignSystem.Spacing.sm)
                     }
                     .onAppear {
-                        i = fragen.firstIndex { $0.antwort.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty } ?? 0
+                        // Alle Cards sind sofort gerendert (VStack) → scrollTo klappt direkt
                         proxy.scrollTo(i, anchor: .top)
+                        // Fokus nach der fullScreenCover-Einblendanimation setzen
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            fokusIndex = i
+                        }
                     }
                     .onChange(of: vorhaben.phase) { _, _ in
                         i = 0
+                        fokusIndex = nil
                         withAnimation { proxy.scrollTo(0, anchor: .top) }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            fokusIndex = 0
+                        }
                     }
                 }
             }
@@ -176,12 +204,13 @@ struct FrageCard: View {
     @Bindable var frage: AufgabeModel
     let index: Int
     let istAktiv: Bool
+    var fokusIndex: FocusState<Int?>.Binding
     let phaseColor: Color
     let istAbschlussfrage: Bool
     var onNext: () -> Void
     var onNächstePhase: () -> Void
 
-    @FocusState private var fokussiert: Bool
+    private var fokussiert: Bool { fokusIndex.wrappedValue == index }
 
     private var istBeantwortet: Bool {
         !frage.antwort.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -264,7 +293,7 @@ struct FrageCard: View {
             .font(.subheadline)
             .textFieldStyle(.plain)
             .lineLimit(2...6)
-            .focused($fokussiert)
+            .focused(fokusIndex, equals: index)
             .padding(DesignSystem.Spacing.md)
             .background {
                 RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
@@ -273,9 +302,6 @@ struct FrageCard: View {
                         RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
                             .stroke(borderColor, lineWidth: borderWidth)
                     }
-            }
-            .onChange(of: istAktiv) { _, aktiv in
-                if aktiv && !istBeantwortet { fokussiert = true }
             }
             .onChange(of: frage.antwort) { _, neu in
                 frage.erledigt = !neu.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -318,8 +344,10 @@ struct FrageCard: View {
             if istAktiv || istBeantwortet {
                 antwortTextField
 
-                if istAktiv && istBeantwortet {
+                if istAktiv {
                     actionButtonRow
+                        .opacity(istBeantwortet ? 1 : 0)
+                        .allowsHitTesting(istBeantwortet)
                 }
             }
         }

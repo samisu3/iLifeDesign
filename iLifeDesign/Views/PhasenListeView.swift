@@ -142,9 +142,9 @@ struct PhasenGruppeView: View {
                     ZStack {
                         Circle()
                             .fill(phase.viewFarbe.opacity(0.18))
-                            .frame(width: 40, height: 40)
+                            .frame(width: 30, height: 30)
                         Image(systemName: phase.icon)
-                            .font(.system(size: 16, weight: .medium))
+                            .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(phase.viewFarbe)
                     }
 
@@ -165,9 +165,6 @@ struct PhasenGruppeView: View {
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
                         }
-                        Text("Phase \(phase.sort + 1) von 10")
-                            .font(.system(size: 10))
-                            .foregroundStyle(phase.viewFarbe.opacity(0.8))
                     }
 
                     Spacer()

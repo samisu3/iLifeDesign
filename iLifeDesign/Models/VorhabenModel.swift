@@ -107,8 +107,7 @@ let VorhabenPhase: [Int: String] =
   5: "Prototyping",
   6: "Feedback",
   7: "Lernen",
-  8: "Kontinuität",
-  9: "Abgebrochen"
+  8: "Kontinuität"
 ]
 
 let VorhabenPhaseIcon: [Int: String] =
@@ -120,8 +119,7 @@ let VorhabenPhaseIcon: [Int: String] =
   5: "play",
   6: "ear",
   7: "book",
-  8: "party.popper",
-  9: "x.circle"
+  8: "party.popper"
 ]
 
 let VorhabenPhaseInfo: [Int: String] =
@@ -133,22 +131,21 @@ let VorhabenPhaseInfo: [Int: String] =
   5: "Erste Version ausprobieren",
   6: "Rückmeldungen sammeln.",
   7: "Was hast Du gelernt?",
-  8: "Neuen Versuch starten.",
-  9: "Das Vorhaben bringt nichts."
+  8: "Neuen Versuch starten."
 ]
 
-let PhaseColor: [Int: Color] =
-[ 0: Color.colorIdee,
-  1: Color.colorEmpathie,
-  2: Color.colorFokus,
-  3: Color.colorInspiration,
-  4: Color.colorÜberwindung,
-  5: Color.colorPrototyping,
-  6: Color.colorFeedback,
-  7: Color.colorLernen,
-  8: Color.colorKontinuität,
-  9: Color.colorAbgebrochen
-]
+/// Gibt die Default-Farbe einer Phase anhand ihrer Sortiernummer zurück.
+/// Wird als Fallback genutzt, solange kein `PhaseModel` aus der Datenbank geladen ist.
+func phaseDefaultColor(_ sort: Int) -> Color {
+    let farbeID = PhaseDefaults.first { $0.sort == sort }?.farbeID ?? "blue"
+    return Color.fromPhaseID(farbeID)
+}
+
+/// Legacy-Dictionary – wird schrittweise durch `PhaseModel.viewFarbe` abgelöst.
+/// Nutzt jetzt die gleichen Farb-IDs wie das neue `PhaseModel`.
+let PhaseColor: [Int: Color] = Dictionary(
+    uniqueKeysWithValues: PhaseDefaults.map { ($0.sort, Color.fromPhaseID($0.farbeID)) }
+)
 
 let Vorhabenpriority: [Int: String] =
 [   0: "★",
@@ -268,9 +265,10 @@ extension VorhabenModel {
         return theIcon
     }
     
+    /// Fallback-Farbe basierend auf den Default-Phasenfarben.
+    /// Wenn ein `PhaseModel` verfügbar ist, besser `phaseModel.viewFarbe` verwenden.
     var viewColor: Color {
-        guard let theColor = PhaseColor[phase] else { return Color.blue }
-        return theColor
+        phaseDefaultColor(phase)
     }
     
     var viewpriority: String {

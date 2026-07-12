@@ -10,81 +10,133 @@ import SwiftData
 
 struct CompactVorhabenCard: View {
     let vorhaben: VorhabenModel
-    let showPhase: Bool // true für LebensbereicheView, false für PhasenListeView
-    /// Optionale Phasenfarbe – direkt aus PhaseModel übergeben, damit sie mit dem PhaseEditor übereinstimmt.
-    /// Wird nicht übergeben, fällt der View auf vorhaben.viewColor (hardcodiertes Dictionary) zurück.
+    let showPhase: Bool
     var phaseColor: Color? = nil
+    /// Callback wenn der Aktions-Button gedrückt wird
+    var onAktion: (() -> Void)? = nil
 
     private var displayColor: Color { phaseColor ?? vorhaben.viewColor }
+    private var phaseFertig: Bool { vorhaben.viewAktuelleAufgabenErledigt }
+    private var nächsteAufgabe: AufgabeModel? { vorhaben.viewAktuellNächsteAufgabe }
 
     var body: some View {
-        HStack(spacing: 8) {
-            // Kleines Vorhaben Icon
-            Image(systemName: vorhaben.viewIcon.isEmpty ? "target" : vorhaben.viewIcon)
-                .font(.caption)
-                .foregroundStyle(displayColor)
-                .frame(width: 16, height: 16)
+        VStack(alignment: .leading, spacing: 6) {
 
-            VStack(alignment: .leading, spacing: 2) {
-                HStack {
-                    Text(vorhaben.bezeichnung)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-
-                    Spacer()
-
-                    // Kompakte Prioritäts-Sterne
-                    HStack(spacing: 0) {
-                        ForEach(0...4, id: \.self) { star in
-                            Image(systemName: star <= vorhaben.priority ? "star.fill" : "star")
-                                .font(.system(size: 8))
-                                .foregroundStyle(star <= vorhaben.priority ? .orange : Color(.systemGray5))
-                        }
-                    }
+            // ── Obere Zeile: Icon + Titel + Sterne ──────────────────────
+            HStack(spacing: 10) {
+                ZStack {
+                    Circle()
+                        .fill(displayColor.opacity(0.15))
+                        .frame(width: 30, height: 30)
+                    Image(systemName: vorhaben.viewIcon.isEmpty ? "target" : vorhaben.viewIcon)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(displayColor)
                 }
 
-                HStack {
-                    // Phase oder Lebensbereich je nach View
-                    if showPhase {
-                        HStack(spacing: 2) {
-                            Image(systemName: vorhaben.viewPhaseIcon)
-                                .font(.system(size: 8))
-                                .foregroundStyle(displayColor)
-                            Text(vorhaben.viewPhase)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                        }
-                    } else {
-                        HStack(spacing: 2) {
-                            Image(systemName: vorhaben.viewLebensbereichIcon)
-                                .font(.system(size: 8))
-                                .foregroundStyle(vorhaben.viewLebensbereichFarbe)
-                            Text(vorhaben.viewLebensbereich)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack {
+                        Text(vorhaben.bezeichnung)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+
+                        Spacer()
+
+                        HStack(spacing: 1) {
+                            ForEach(0...4, id: \.self) { star in
+                                Image(systemName: star <= vorhaben.priority ? "star.fill" : "star")
+                                    .font(.system(size: 9))
+                                    .foregroundStyle(star <= vorhaben.priority ? .orange : Color(.systemGray5))
+                            }
                         }
                     }
 
-                    Spacer()
+                    HStack {
+                        if showPhase {
+                            HStack(spacing: 3) {
+                                Image(systemName: vorhaben.viewPhaseIcon)
+                                    .font(.system(size: 9))
+                                    .foregroundStyle(displayColor)
+                                Text(vorhaben.viewPhase)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                        } else {
+                            HStack(spacing: 3) {
+                                Image(systemName: vorhaben.viewLebensbereichIcon)
+                                    .font(.system(size: 9))
+                                    .foregroundStyle(vorhaben.viewLebensbereichFarbe)
+                                Text(vorhaben.viewLebensbereich)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                        }
 
-                    // Fortschritt-Zähler
-                    if vorhaben.viewAktuelleAufgabenAnzahl > 0 {
-                        Text("\(vorhaben.viewAktuelleAufgabenAnzahlErledigt)/\(vorhaben.viewAktuelleAufgabenAnzahl)")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                        Spacer()
+
+                        if vorhaben.viewAktuelleAufgabenAnzahl > 0 {
+                            Text("\(vorhaben.viewAktuelleAufgabenAnzahlErledigt)/\(vorhaben.viewAktuelleAufgabenAnzahl)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }
+
+            // ── Aktions-Button ───────────────────────────────────────────
+            if vorhaben.viewAktuelleAufgabenAnzahl > 0 {
+                Button {
+                    onAktion?()
+                } label: {
+                    HStack(spacing: 8) {
+                        if phaseFertig {
+                            Text("Phase abgeschlossen · Überarbeiten")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.green)
+                        } else if let aufgabe = nächsteAufgabe {
+                            Text(aufgabe.aufgabe)
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white)
+                                .lineLimit(1)
+                        } else {
+                            Text("Nächste Aktion")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white)
+                        }
+
+                        Spacer(minLength: 0)
+
+                        Image(systemName: phaseFertig ? "checkmark.circle.fill" : "chevron.right")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(phaseFertig ? .green.opacity(0.7) : .white.opacity(0.7))
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 7)
+                    .background {
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .fill(phaseFertig ? .green.opacity(0.12) : displayColor)
+                            .overlay {
+                                if phaseFertig {
+                                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                        .stroke(.green.opacity(0.4), lineWidth: 1)
+                                }
+                            }
+                    }
+                }
+                .buttonStyle(.plain)
+            }
         }
         .padding(.horizontal, 8)
-        .padding(.vertical, 6)
+        .padding(.vertical, 8)
         .background {
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(Color(.systemGray6).opacity(0.3))
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Color(.systemGray6).opacity(0.5))
         }
     }
 }
@@ -107,7 +159,7 @@ struct CompactVorhabenCard: View {
 }
 
 // MARK: - VorhabenZeile
-// Zeile mit zwei Tap-Bereichen: links → VorhabenEditor, rechts → AufgabenListeView
+// Zeile mit zwei Tap-Bereichen: links → VorhabenEditor, Aktions-Button → AufgabenListeView
 
 struct VorhabenZeile: View {
     @Bindable var vorhaben: VorhabenModel
@@ -116,37 +168,25 @@ struct VorhabenZeile: View {
 
     @State private var zeigeAufgaben = false
 
-    private var displayColor: Color { phaseColor ?? vorhaben.viewColor }
-    private var phaseFertig: Bool { vorhaben.viewAktuelleAufgabenErledigt }
-
     var body: some View {
-        HStack(spacing: 0) {
-
-            // ── Linke Seite: Navigation zum Editor ──────────────────────
-            NavigationLink {
-                VorhabenEditor(vorhaben: vorhaben)
-            } label: {
-                CompactVorhabenCard(vorhaben: vorhaben, showPhase: showPhase, phaseColor: phaseColor)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .buttonStyle(.plain)
-
-            // ── Rechte Seite: Direkt zur nächsten Aktion ─────────────────
-            if vorhaben.viewAktuelleAufgabenAnzahl > 0 {
-                Button {
-                    zeigeAufgaben = true
-                } label: {
-                    Image(systemName: phaseFertig ? "checkmark.circle.fill" : "arrow.right.circle.fill")
-                        .font(.system(size: 20))
-                        .foregroundStyle(phaseFertig ? .green : displayColor)
-                        .padding(.leading, 8)
-                        .padding(.trailing, 4)
-                }
-                .buttonStyle(.plain)
-            }
+        NavigationLink {
+            VorhabenEditor(vorhaben: vorhaben)
+        } label: {
+            CompactVorhabenCard(
+                vorhaben: vorhaben,
+                showPhase: showPhase,
+                phaseColor: phaseColor,
+                onAktion: { zeigeAufgaben = true }
+            )
         }
-        .fullScreenCover(isPresented: $zeigeAufgaben) {
-            AufgabenListeView(vorhaben: vorhaben)
+        .buttonStyle(.plain)
+        // fullScreenCover ausserhalb des NavigationLink-Kontexts —
+        // sonst ist der onAppear-Timing in AufgabenListeView gestört
+        .background {
+            Color.clear
+                .fullScreenCover(isPresented: $zeigeAufgaben) {
+                    AufgabenListeView(vorhaben: vorhaben)
+                }
         }
     }
 }

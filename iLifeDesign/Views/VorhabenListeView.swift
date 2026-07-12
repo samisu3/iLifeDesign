@@ -49,12 +49,9 @@ struct VorhabenListeView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Dynamic Background
-                if let firstVorhaben = Vorhabens.first {
-                    DesignSystem.Colors.backgroundGradient(for: firstVorhaben.viewColor)
-                        .ignoresSafeArea()
-                        .animation(.easeInOut(duration: 1.0), value: firstVorhaben.viewColor)
-                }
+                // Background
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
                 
                 Group {
                     if Vorhabens.isEmpty {

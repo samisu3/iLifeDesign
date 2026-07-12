@@ -82,7 +82,6 @@ let PhaseDefaults: [PhaseDefault] = [
     PhaseDefault(sort: 6, name: "Feedback",    info: "Rückmeldungen sammeln.",          icon: "ear",              farbeID: "teal"),
     PhaseDefault(sort: 7, name: "Lernen",      info: "Was hast Du gelernt?",            icon: "book",             farbeID: "indigo"),
     PhaseDefault(sort: 8, name: "Kontinuität", info: "Neuen Versuch starten.",          icon: "party.popper",     farbeID: "purple"),
-    PhaseDefault(sort: 9, name: "Abgebrochen", info: "Das Vorhaben bringt nichts.",     icon: "x.circle",         farbeID: "gray"),
 ]
 
 // MARK: - SwiftData Model

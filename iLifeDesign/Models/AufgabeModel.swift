@@ -110,12 +110,6 @@ func addStandardAufgaben(vorhaben: VorhabenModel) {
     addFrage("Feier Deinen Erfolg bewusst und mit Freude",              phase: 8, sort: 3)
     addFrage("Plane den nächsten Zyklus dieses Vorhabens",              phase: 8, sort: 4)
     addFrage("Schreibe auf, was dieses Vorhaben für Dich bedeutet",     phase: 8, sort: 5, istAbschlussfrage: true)
-
-    // Phase 9 – Abgebrochen
-    addFrage("Benenne ehrlich, was zum Abbruch geführt hat",            phase: 9, sort: 1)
-    addFrage("Halte fest, was Du trotzdem gelernt hast",                phase: 9, sort: 2)
-    addFrage("Entscheide, was Du stattdessen tust",                     phase: 9, sort: 3)
-    addFrage("Nimm Deine wichtigste Erkenntnis mit in das nächste Vorhaben", phase: 9, sort: 4, istAbschlussfrage: true)
 }
 
 
