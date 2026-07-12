@@ -5,9 +5,9 @@
       location = "self:">
    </FileRef>
    <FileRef
-      location = "group:CHANGELOG.md">
+      location = "group:DesignSystem.swift">
    </FileRef>
    <FileRef
-      location = "group:README.md">
+      location = "group:DesignSystem 2.swift">
    </FileRef>
 </Workspace>

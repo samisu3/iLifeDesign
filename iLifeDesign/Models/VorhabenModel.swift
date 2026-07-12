@@ -203,17 +203,21 @@ class VorhabenModel {
     var phase: Int = 0
     var priority: Int = 0
     var beschreibung: String = ""
-    var lebensbereich:  Int = 0
+    /// Veraltetes Int-Feld – bleibt für Migration erhalten, wird aber nicht mehr aktiv genutzt.
+    var lebensbereich: Int = 0
+    /// Neue Beziehung zum LebensbereichModel
+    var lebensbereichRef: LebensbereichModel?
     @Relationship(deleteRule: .cascade, inverse: \AufgabeModel.vorhaben)
     var aufgaben: [AufgabeModel]? = []
     
-    init(bezeichnung: String = "", icon: Int = 0, phase: Int = 0, priority: Int = 1, beschreibung: String = "",   lebensbereich: Int = 1, aufgaben: [AufgabeModel] = []) {
+    init(bezeichnung: String = "", icon: Int = 0, phase: Int = 0, priority: Int = 1, beschreibung: String = "", lebensbereich: Int = 0, lebensbereichRef: LebensbereichModel? = nil, aufgaben: [AufgabeModel] = []) {
         self.bezeichnung = bezeichnung
         self.icon = icon
         self.phase = phase
         self.priority = priority
-        self.beschreibung = beschreibung 
+        self.beschreibung = beschreibung
         self.lebensbereich = lebensbereich
+        self.lebensbereichRef = lebensbereichRef
         self.aufgaben = aufgaben
     }
 }
@@ -222,13 +226,18 @@ class VorhabenModel {
 extension VorhabenModel {
 
     var viewLebensbereich: String {
-        guard let theLebensbereich = Lebensbereiche[lebensbereich] else {return "" }
-        return theLebensbereich
+        if let ref = lebensbereichRef { return ref.name }
+        return Lebensbereiche[lebensbereich] ?? ""
     }
     
     var viewLebensbereichIcon: String {
-        guard let theLebensbereichIcon = LebensbereicheIcon[lebensbereich] else {return "circle" }
-        return theLebensbereichIcon
+        if let ref = lebensbereichRef { return ref.icon }
+        return LebensbereicheIcon[lebensbereich] ?? "circle"
+    }
+
+    var viewLebensbereichFarbe: Color {
+        if let ref = lebensbereichRef { return ref.viewFarbe }
+        return LebensbereicheColor[lebensbereich] ?? .gray
     }
     
     var viewPhase: String {
@@ -302,43 +311,56 @@ extension VorhabenModel {
     @MainActor
     static var preview: ModelContainer {
         do {
-            let container = try ModelContainer(for: VorhabenModel.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
-        
-        // Vorhabene
-        let iLifeDesign = VorhabenModel(bezeichnung: "iLifeDesign", icon: 23,  phase: 2, priority: 0, beschreibung: "Das iLifeDesing Tool machen", lebensbereich: 7)
-        container.mainContext.insert(iLifeDesign)
-        addStandardAufgaben(vorhaben: iLifeDesign)
-        
-        let balkonEinrichten = VorhabenModel(bezeichnung: "Balkon Einrichten", icon: 2, phase: 1 , priority: 1, beschreibung: "Den Balkon neu einrichten" , lebensbereich: 5)
-        container.mainContext.insert(balkonEinrichten)
-        addStandardAufgaben(vorhaben: balkonEinrichten)
-        
-        let neuJob = VorhabenModel(bezeichnung: "Neuen Job suchen", icon: 24, phase: 0, priority: 2, beschreibung: "Neuen (guten) Job suchen", lebensbereich: 3)
-        container.mainContext.insert(neuJob)
-        addStandardAufgaben(vorhaben: neuJob)
-        
-        let buchSchreiben = VorhabenModel(bezeichnung: "Buch Schreiben", icon: 22, phase: 4, priority: 3, beschreibung: "Buach über mein Leben schreiben", lebensbereich: 3)
-        container.mainContext.insert(buchSchreiben)
-        addStandardAufgaben(vorhaben: buchSchreiben)
-        
-        
-        let weltReise = VorhabenModel(bezeichnung: "Weltreise", icon: 5, phase: 6, priority: 4, beschreibung: "Um die Welt in 80 Tagen", lebensbereich: 7)
-        container.mainContext.insert(weltReise)
-        addStandardAufgaben(vorhaben: weltReise)
-        
-        
-        let gartenPflegen = VorhabenModel(bezeichnung: "Garten pflegen", icon: 24, phase: 5, priority: 0, beschreibung: "Neue Wege anlegen", lebensbereich: 5)
-        container.mainContext.insert(gartenPflegen)
-        addStandardAufgaben(vorhaben: gartenPflegen)
-        
-        let weiterBildung = VorhabenModel(bezeichnung: "Weiterbildung", icon: 29, phase: 3, priority: 1, beschreibung: "Bachelor in Software Entwicklung", lebensbereich: 6)
-        container.mainContext.insert(weiterBildung)
-        addStandardAufgaben(vorhaben: weiterBildung)
-                                            
-        return container
+            let container = try ModelContainer(
+                for: VorhabenModel.self, LebensbereichModel.self,
+                configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+            )
+
+            // Standard-Lebensbereiche anlegen
+            setupStandardLebensbereiche(context: container.mainContext)
+
+            let fetch = FetchDescriptor<LebensbereichModel>(sortBy: [SortDescriptor(\.sort)])
+            let bereiche = (try? container.mainContext.fetch(fetch)) ?? []
+
+            func bereich(_ sort: Int) -> LebensbereichModel? {
+                bereiche.first { $0.sort == sort }
+            }
+
+            // Vorhabene
+            let iLifeDesign = VorhabenModel(bezeichnung: "iLifeDesign", icon: 23, phase: 2, priority: 0, beschreibung: "Das iLifeDesign Tool machen", lebensbereich: 7, lebensbereichRef: bereich(7))
+            container.mainContext.insert(iLifeDesign)
+            addStandardAufgaben(vorhaben: iLifeDesign)
+
+            let balkonEinrichten = VorhabenModel(bezeichnung: "Balkon Einrichten", icon: 2, phase: 1, priority: 1, beschreibung: "Den Balkon neu einrichten", lebensbereich: 5, lebensbereichRef: bereich(5))
+            container.mainContext.insert(balkonEinrichten)
+            addStandardAufgaben(vorhaben: balkonEinrichten)
+
+            let neuJob = VorhabenModel(bezeichnung: "Neuen Job suchen", icon: 24, phase: 0, priority: 2, beschreibung: "Neuen (guten) Job suchen", lebensbereich: 3, lebensbereichRef: bereich(3))
+            container.mainContext.insert(neuJob)
+            addStandardAufgaben(vorhaben: neuJob)
+
+            let buchSchreiben = VorhabenModel(bezeichnung: "Buch Schreiben", icon: 22, phase: 4, priority: 3, beschreibung: "Buch über mein Leben schreiben", lebensbereich: 3, lebensbereichRef: bereich(3))
+            container.mainContext.insert(buchSchreiben)
+            addStandardAufgaben(vorhaben: buchSchreiben)
+
+            let weltReise = VorhabenModel(bezeichnung: "Weltreise", icon: 5, phase: 6, priority: 4, beschreibung: "Um die Welt in 80 Tagen", lebensbereich: 7, lebensbereichRef: bereich(7))
+            container.mainContext.insert(weltReise)
+            addStandardAufgaben(vorhaben: weltReise)
+
+            let gartenPflegen = VorhabenModel(bezeichnung: "Garten pflegen", icon: 24, phase: 5, priority: 0, beschreibung: "Neue Wege anlegen", lebensbereich: 5, lebensbereichRef: bereich(5))
+            container.mainContext.insert(gartenPflegen)
+            addStandardAufgaben(vorhaben: gartenPflegen)
+
+            let weiterBildung = VorhabenModel(bezeichnung: "Weiterbildung", icon: 29, phase: 3, priority: 1, beschreibung: "Bachelor in Software Entwicklung", lebensbereich: 6, lebensbereichRef: bereich(6))
+            container.mainContext.insert(weiterBildung)
+            addStandardAufgaben(vorhaben: weiterBildung)
+
+            return container
         } catch {
-            // Fallback container bei Fehlern
-            return try! ModelContainer(for: VorhabenModel.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+            return try! ModelContainer(
+                for: VorhabenModel.self, LebensbereichModel.self,
+                configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+            )
         }
     }
 }
@@ -346,6 +368,7 @@ extension VorhabenModel {
 
 extension VorhabenModel {
 
+        @MainActor
         static let preview2 = VorhabenModel(
             bezeichnung: "Test-Ziel",
             icon: 2,

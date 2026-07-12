@@ -14,56 +14,65 @@ struct AufgabenListeView: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 16) {
-                    headerSection
-                    
-                    if vorhaben.viewAktuelleAufgaben.isEmpty {
-                        emptyStateView
-                    } else {
-                        aufgabenSection
+            ZStack {
+                // Dynamic Background
+                DesignSystem.Colors.backgroundGradient(for: vorhaben.viewColor)
+                    .ignoresSafeArea()
+                
+                ScrollView {
+                    LazyVStack(spacing: DesignSystem.Spacing.lg) {
+                        headerSection
+                        
+                        if vorhaben.viewAktuelleAufgaben.isEmpty {
+                            emptyStateView
+                        } else {
+                            aufgabenSection
+                        }
+                        
+                        progressSection
                     }
-                    
-                    progressSection
+                    .padding(.horizontal, DesignSystem.Spacing.lg)
+                    .padding(.vertical, DesignSystem.Spacing.sm)
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 8)
             }
             .navigationTitle(vorhaben.viewPhase)
-            .navigationBarTitleDisplayMode(.large)
+            .modernNavigation()
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button("Fertig") {
                         dismiss()
                     }
-                    .fontWeight(.semibold)
+                    .buttonStyle(ModernButtonStyle(color: vorhaben.viewColor, isProminent: true))
                 }
-            }
-            .background {
-                LinearGradient(
-                    colors: [
-                        vorhaben.viewColor.opacity(0.03),
-                        Color(.systemBackground)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
             }
         }
     }
     
     // MARK: - Header Section
     private var headerSection: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Image(systemName: vorhaben.viewPhaseIcon)
-                    .font(.title2)
-                    .foregroundStyle(vorhaben.viewColor)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(vorhaben.bezeichnung)
-                        .font(.headline)
+        VStack(spacing: DesignSystem.Spacing.lg) {
+            // Titel und Icon
+            HStack(spacing: DesignSystem.Spacing.md) {
+                ZStack {
+                    Circle()
+                        .fill(vorhaben.viewColor.opacity(0.2))
+                        .frame(width: 60, height: 60)
+                        .overlay {
+                            Circle()
+                                .stroke(vorhaben.viewColor.opacity(0.4), lineWidth: 2)
+                        }
+                        .shadow(color: vorhaben.viewColor.opacity(0.3), radius: 8, x: 0, y: 4)
+                    
+                    Image(systemName: vorhaben.viewPhaseIcon)
+                        .font(.title)
                         .fontWeight(.semibold)
+                        .foregroundStyle(vorhaben.viewColor)
+                }
+                
+                VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
+                    Text(vorhaben.bezeichnung)
+                        .font(.title2)
+                        .fontWeight(.bold)
                         .foregroundStyle(.primary)
                     
                     Text(vorhaben.viewPhaseInfo)
@@ -74,58 +83,66 @@ struct AufgabenListeView: View {
                 Spacer()
             }
             
-            // Progress Bar
-            VStack(alignment: .leading, spacing: 8) {
+            // Enhanced Progress Bar
+            VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
                 HStack {
                     Text("Fortschritt")
                         .font(.subheadline)
-                        .fontWeight(.medium)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
                     
                     Spacer()
                     
                     Text("\(vorhaben.viewAktuelleAufgabenAnzahlErledigt)/\(vorhaben.viewAktuelleAufgabenAnzahl)")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+                        .font(.headline)
+                        .fontWeight(.bold)
                         .foregroundStyle(vorhaben.viewColor)
+                        .padding(.horizontal, DesignSystem.Spacing.sm)
+                        .padding(.vertical, DesignSystem.Spacing.xs)
+                        .background {
+                            Capsule()
+                                .fill(vorhaben.viewColor.opacity(0.15))
+                                .overlay {
+                                    Capsule()
+                                        .stroke(vorhaben.viewColor.opacity(0.3), lineWidth: 1)
+                                }
+                        }
+                        .shadow(color: vorhaben.viewColor.opacity(0.2), radius: 4, x: 0, y: 2)
                 }
                 
                 GeometryReader { geometry in
                     ZStack(alignment: .leading) {
-                        Rectangle()
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
                             .fill(Color(.systemGray5))
-                            .frame(height: 6)
-                            .cornerRadius(3)
+                            .frame(height: 8)
                         
                         if vorhaben.viewAktuelleAufgabenAnzahl > 0 {
-                            Rectangle()
-                                .fill(vorhaben.viewColor)
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(LinearGradient(
+                                    colors: [vorhaben.viewColor, vorhaben.viewColor.opacity(0.7)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                ))
                                 .frame(
                                     width: geometry.size.width * (Double(vorhaben.viewAktuelleAufgabenAnzahlErledigt) / Double(vorhaben.viewAktuelleAufgabenAnzahl)),
-                                    height: 6
+                                    height: 8
                                 )
-                                .cornerRadius(3)
                                 .animation(.easeInOut(duration: 0.5), value: vorhaben.viewAktuelleAufgabenAnzahlErledigt)
                         }
                     }
+                    .shadow(color: vorhaben.viewColor.opacity(0.2), radius: 4, x: 0, y: 2)
                 }
-                .frame(height: 6)
+                .frame(height: 8)
             }
         }
-        .padding(.vertical, 20)
-        .padding(.horizontal, 20)
-        .background {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(vorhaben.viewColor.opacity(0.2), lineWidth: 1)
-                }
-        }
+        .padding(DesignSystem.Spacing.xl)
+        .modernCard(color: vorhaben.viewColor, cornerRadius: DesignSystem.CornerRadius.xl)
+        .shadow(color: vorhaben.viewColor.opacity(0.1), radius: 8, x: 0, y: 4)
     }
     
     // MARK: - Aufgaben Section
     private var aufgabenSection: some View {
-        LazyVStack(spacing: 12) {
+        LazyVStack(spacing: DesignSystem.Spacing.md) {
             ForEach(vorhaben.viewAktuelleAufgaben, id: \.self) { aufgabe in
                 AufgabenCard(aufgabe: aufgabe, phaseColor: vorhaben.viewColor)
             }
@@ -225,58 +242,68 @@ struct AufgabenListeView: View {
 struct AufgabenCard: View {
     @Bindable var aufgabe: AufgabeModel
     let phaseColor: Color
+    @State private var isHovered = false
     
     // Funktion um zur nächsten Aufgabe zu springen
     private func moveToNextTask() {
-        // Aktuelle Aufgabe als erledigt markieren
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-            aufgabe.erledigt = true
+        // Kurze Verzögerung um Focus-Konflikte zu vermeiden
+        Task { @MainActor in
+            try await Task.sleep(nanoseconds: 50_000_000) // 50ms
+            
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                aufgabe.erledigt = true
+            }
         }
-        
-        // Hier könnte zusätzliche Logik für das Springen zur nächsten Aufgabe hinzugefügt werden
-        // z.B. ScrollView zur nächsten Aufgabe, Focus Management, etc.
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 12) {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
+            // Header mit Checkbox und Titel
+            HStack(alignment: .top, spacing: DesignSystem.Spacing.md) {
+                // Animated Checkbox
                 Button {
+                    // Defensive Implementierung gegen Focus-Probleme
+                    guard !aufgabe.erledigt else { return }
+                    
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         aufgabe.erledigt.toggle()
                     }
                 } label: {
-                    Image(systemName: aufgabe.erledigt ? "checkmark.circle.fill" : "circle")
-                        .font(.title3)
-                        .foregroundStyle(aufgabe.erledigt ? phaseColor : Color(.systemGray3))
+                    ZStack {
+                        Circle()
+                            .fill(aufgabe.erledigt ? phaseColor : Color(.systemGray5))
+                            .frame(width: 28, height: 28)
+                            .overlay {
+                                Circle()
+                                    .stroke(phaseColor.opacity(0.3), lineWidth: 2)
+                            }
+                            .shadow(color: phaseColor.opacity(aufgabe.erledigt ? 0.3 : 0.1), radius: 4, x: 0, y: 2)
+                        
+                        if aufgabe.erledigt {
+                            Image(systemName: "checkmark")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.white)
+                        }
+                    }
                 }
                 .buttonStyle(.plain)
+                .disabled(false) // Explizit aktiviert lassen
                 
-                VStack(alignment: .leading, spacing: 8) {
-                    // Aufgaben-Titel (nur anzeigen, nicht änderbar)
+                // Task Content
+                VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
                     Text(aufgabe.aufgabe.isEmpty ? "Aufgabe ohne Titel" : aufgabe.aufgabe)
                         .font(.subheadline)
-                        .fontWeight(.medium)
+                        .fontWeight(.semibold)
                         .foregroundStyle(aufgabe.erledigt ? .secondary : .primary)
+                        .strikethrough(aufgabe.erledigt)
                         .multilineTextAlignment(.leading)
+                        .animation(.easeInOut(duration: 0.3), value: aufgabe.erledigt)
                 }
                 
                 Spacer()
-            }
-            
-            // Antwort-Textfeld (immer editierbar)
-            HStack(spacing: 8) {
-                TextField("Ihre Antwort oder Notizen...", text: $aufgabe.antwort, axis: .vertical)
-                    .font(.caption)
-                    .textFieldStyle(.plain)
-                    .lineLimit(1...3)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background {
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(Color(.systemGray6))
-                    }
                 
-                // Button für "Zur nächsten Aufgabe" (nur wenn nicht erledigt)
+                // Quick Action Button
                 if !aufgabe.erledigt {
                     Button {
                         moveToNextTask()
@@ -288,20 +315,54 @@ struct AufgabenCard: View {
                     .buttonStyle(.plain)
                     .opacity(!aufgabe.antwort.isEmpty ? 1.0 : 0.3)
                     .disabled(aufgabe.antwort.isEmpty)
+                    .shadow(color: phaseColor.opacity(0.2), radius: 2, x: 0, y: 1)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: aufgabe.antwort.isEmpty)
                 }
             }
+            
+            // Answer Field
+            VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
+                Text("Ihre Antwort:")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.secondary)
+                
+                TextField("Notizen und Gedanken...", text: $aufgabe.antwort, axis: .vertical)
+                    .font(.subheadline)
+                    .textFieldStyle(.plain)
+                    .lineLimit(2...4)
+                    .padding(DesignSystem.Spacing.md)
+                    .background {
+                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm, style: .continuous)
+                            .fill(.ultraThinMaterial)
+                            .overlay {
+                                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm, style: .continuous)
+                                    .stroke(phaseColor.opacity(aufgabe.antwort.isEmpty ? 0.2 : 0.4), lineWidth: 1)
+                            }
+                            .shadow(color: phaseColor.opacity(0.1), radius: 2, x: 0, y: 1)
+                    }
+            }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(DesignSystem.Spacing.lg)
         .background {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(aufgabe.erledigt ? Color(.systemGray6).opacity(0.5) : Color(.systemBackground))
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .opacity(aufgabe.erledigt ? 0.5 : 1.0)
                 .overlay {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(aufgabe.erledigt ? phaseColor.opacity(0.3) : Color(.systemGray4), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md, style: .continuous)
+                        .stroke(
+                            aufgabe.erledigt ? phaseColor.opacity(0.3) : phaseColor.opacity(0.2), 
+                            lineWidth: aufgabe.erledigt ? 2 : 1
+                        )
                 }
         }
-        .animation(.easeInOut(duration: 0.3), value: aufgabe.erledigt)
+        .shadow(color: phaseColor.opacity(aufgabe.erledigt ? 0.2 : 0.1), radius: 6, x: 0, y: 3)
+        .scaleEffect(isHovered ? 1.02 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: aufgabe.erledigt)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isHovered)
+        .onHover { hovering in
+            isHovered = hovering
+        }
     }
 }
 

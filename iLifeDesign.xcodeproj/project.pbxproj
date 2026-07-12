@@ -7,7 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		28169BFC2F79471500375C3D /* iLifeDesignNew.icon in Resources */ = {isa = PBXBuildFile; fileRef = 28169BFB2F79471500375C3D /* iLifeDesignNew.icon */; };
+		280567E62FB74F36003CD1A9 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280567E52FB74F36003CD1A9 /* DesignSystem.swift */; };
+		284135063003CEEC00D0CCBB /* LebensbereichModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 284135053003CEEC00D0CCBB /* LebensbereichModel.swift */; };
+		284135083003CF0100D0CCBB /* LebensbereichEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 284135073003CF0100D0CCBB /* LebensbereichEditor.swift */; };
+		2841350A3003CF0600D0CCBB /* LebensbereicheView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 284135093003CF0600D0CCBB /* LebensbereicheView.swift */; };
 		2893EE632F6C586D004BDECD /* VorhabenEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2893EE622F6C586D004BDECD /* VorhabenEditor.swift */; };
 		2893EE672F6C5898004BDECD /* AufgabenListeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2893EE662F6C5898004BDECD /* AufgabenListeView.swift */; };
 		2893EE772F6C7976004BDECD /* PhasenListeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2893EE762F6C7976004BDECD /* PhasenListeView.swift */; };
@@ -24,7 +27,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		28169BFB2F79471500375C3D /* iLifeDesignNew.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = iLifeDesignNew.icon; sourceTree = "<group>"; };
+		280567E52FB74F36003CD1A9 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+		284135053003CEEC00D0CCBB /* LebensbereichModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LebensbereichModel.swift; sourceTree = "<group>"; };
+		284135073003CF0100D0CCBB /* LebensbereichEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LebensbereichEditor.swift; sourceTree = "<group>"; };
+		284135093003CF0600D0CCBB /* LebensbereicheView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LebensbereicheView.swift; sourceTree = "<group>"; };
 		2893EE622F6C586D004BDECD /* VorhabenEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VorhabenEditor.swift; sourceTree = "<group>"; };
 		2893EE662F6C5898004BDECD /* AufgabenListeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AufgabenListeView.swift; sourceTree = "<group>"; };
 		2893EE762F6C7976004BDECD /* PhasenListeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhasenListeView.swift; sourceTree = "<group>"; };
@@ -79,7 +85,6 @@
 				B6FBAE9E2C1F52CE00DB5785 /* Models */,
 				B6A536262C1815C00033C0D4 /* iLifeDesignApp.swift */,
 				B6A5362A2C1815C10033C0D4 /* Assets.xcassets */,
-				28169BFB2F79471500375C3D /* iLifeDesignNew.icon */,
 				B6A5362C2C1815C10033C0D4 /* Preview Content */,
 			);
 			path = iLifeDesign;
@@ -98,6 +103,9 @@
 			children = (
 				B6FBAE9C2C1F52C700DB5785 /* AufgabeModel.swift */,
 				B6FBAE9F2C1F52EE00DB5785 /* VorhabenModel.swift */,
+				284135053003CEEC00D0CCBB /* LebensbereichModel.swift */,
+				284135073003CF0100D0CCBB /* LebensbereichEditor.swift */,
+				284135093003CF0600D0CCBB /* LebensbereicheView.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -113,6 +121,7 @@
 				B6FBAE922C1F51BE00DB5785 /* VorhabenView.swift */,
 				2893EE762F6C7976004BDECD /* PhasenListeView.swift */,
 				2893EE782F6C8632004BDECD /* CompactVorhabenCard.swift */,
+				280567E52FB74F36003CD1A9 /* DesignSystem.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -145,7 +154,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1540;
-				LastUpgradeCheck = 1540;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					B6A536222C1815C00033C0D4 = {
 						CreatedOnToolsVersion = 15.4;
@@ -177,7 +186,6 @@
 			files = (
 				B6A5362E2C1815C10033C0D4 /* Preview Assets.xcassets in Resources */,
 				B6A5362B2C1815C10033C0D4 /* Assets.xcassets in Resources */,
-				28169BFC2F79471500375C3D /* iLifeDesignNew.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -188,12 +196,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				284135063003CEEC00D0CCBB /* LebensbereichModel.swift in Sources */,
+				280567E62FB74F36003CD1A9 /* DesignSystem.swift in Sources */,
 				B66C1E192C7271DD00823AA0 /* LebensbereicheView.swift in Sources */,
 				B6FBAE9D2C1F52C700DB5785 /* AufgabeModel.swift in Sources */,
 				B64791262CB2DE5900F60F9A /* SymbolPickerView.swift in Sources */,
+				2841350A3003CF0600D0CCBB /* LebensbereicheView.swift in Sources */,
 				2893EE632F6C586D004BDECD /* VorhabenEditor.swift in Sources */,
 				2893EE672F6C5898004BDECD /* AufgabenListeView.swift in Sources */,
 				2893EE792F6C8632004BDECD /* CompactVorhabenCard.swift in Sources */,
+				284135083003CF0100D0CCBB /* LebensbereichEditor.swift in Sources */,
 				B6FBAE952C1F51C800DB5785 /* VorhabenListeView.swift in Sources */,
 				B6FBAEA02C1F52EE00DB5785 /* VorhabenModel.swift in Sources */,
 				B6A536272C1815C00033C0D4 /* iLifeDesignApp.swift in Sources */,
@@ -240,6 +252,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 3EWWR62JNK;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -263,6 +276,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -303,6 +317,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 3EWWR62JNK;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -319,6 +334,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -329,6 +345,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = iLifeDesign/iLifeDesign.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -337,12 +354,14 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iLifeDesign/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = iLifeDesign;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -350,8 +369,12 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ch.projektpraxis.iLifeDesign;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -361,20 +384,23 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = iLifeDesign/iLifeDesign.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 1.1;
 				DEVELOPMENT_ASSET_PATHS = "\"iLifeDesign/Preview Content\"";
 				DEVELOPMENT_TEAM = 3EWWR62JNK;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iLifeDesign/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = iLifeDesign;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -382,8 +408,12 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ch.projektpraxis.iLifeDesign;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

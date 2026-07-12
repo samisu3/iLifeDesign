@@ -55,9 +55,9 @@ struct CompactVorhabenCard: View {
                         }
                     } else {
                         HStack(spacing: 2) {
-                            Image(systemName: LebensbereicheIcon[vorhaben.lebensbereich] ?? "circle")
+                            Image(systemName: vorhaben.viewLebensbereichIcon)
                                 .font(.system(size: 8))
-                                .foregroundStyle(LebensbereicheColor[vorhaben.lebensbereich] ?? .gray)
+                                .foregroundStyle(vorhaben.viewLebensbereichFarbe)
                             
                             Text(vorhaben.viewLebensbereich)
                                 .font(.caption2)

@@ -20,6 +20,7 @@ struct VorhabenListeView: View {
         SortDescriptor(\VorhabenModel.priority, order: .reverse),
         SortDescriptor(\VorhabenModel.phase)
     ]
+    @State private var showingStatsSheet = false
     
     // Neue Preiew Variable, die nil sein kann
     var previewVorhabens: [VorhabenModel]? = nil
@@ -47,63 +48,80 @@ struct VorhabenListeView: View {
     
     var body: some View {
         NavigationStack {
-            Group {
-                if Vorhabens.isEmpty {
-                    VStack(spacing: 20) {
-                        Image(systemName: "list.bullet.clipboard")
-                            .font(.system(size: 60))
-                            .foregroundColor(.secondary)
-                        
-                        VStack(spacing: 8) {
-                            Text("Keine Vorhaben vorhanden")
-                                .font(.title2)
-                                .fontWeight(.medium)
-                            
-                            Text("Fügen Sie Ihr erstes Vorhaben mit dem + hinzu")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    List {
-                        ForEach(Vorhabens){ vorhaben in
-                            NavigationLink {
-                                VorhabenEditor(vorhaben: vorhaben)
-                                // refresh.toggle()
-                            } label: {
-                                VorhabenView(vorhaben: vorhaben)
+            ZStack {
+                // Dynamic Background
+                if let firstVorhaben = Vorhabens.first {
+                    DesignSystem.Colors.backgroundGradient(for: firstVorhaben.viewColor)
+                        .ignoresSafeArea()
+                        .animation(.easeInOut(duration: 1.0), value: firstVorhaben.viewColor)
+                }
+                
+                Group {
+                    if Vorhabens.isEmpty {
+                        emptyStateView
+                    } else {
+                        ScrollView {
+                            LazyVStack(spacing: DesignSystem.Spacing.md) {
+                                // Stats Header
+                                statsHeaderView
+                                
+                                // Vorhaben List
+                                ForEach(Vorhabens) { vorhaben in
+                                    NavigationLink {
+                                        VorhabenEditor(vorhaben: vorhaben)
+                                    } label: {
+                                        VorhabenView(vorhaben: vorhaben)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                        Button("Löschen", role: .destructive) {
+                                            VorhabenToDelete = vorhaben
+                                            showDeleteAlert = true
+                                        }
+                                    }
+                                }
                             }
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                            .padding(.vertical, 2)
-                        }
-                        .onDelete{ indexSet in
-                            let theIndex = indexSet.first
-                            VorhabenToDelete = Vorhabens[theIndex!]
-                            showDeleteAlert.toggle()
+                            .padding(.horizontal, DesignSystem.Spacing.lg)
+                            .padding(.vertical, DesignSystem.Spacing.sm)
                         }
                     }
-                    .listStyle(.plain)
-                    .contentMargins(.horizontal, 16, for: .scrollContent)
                 }
             }
-            .searchable(text: $searchText)
-            .navigationTitle("Vorhaben")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar{
-                Button("", systemImage: "arrow.clockwise") {
-                    refresh.toggle()
+            .searchable(text: $searchText, prompt: "Vorhaben suchen...")
+            .navigationTitle("Meine Vorhaben")
+            .modernNavigation()
+            .toolbar {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button {
+                        showingStatsSheet = true
+                    } label: {
+                        Image(systemName: "chart.bar.fill")
+                            .foregroundStyle(.tint)
+                    }
+                    
+                    Button {
+                        refresh.toggle()
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                            .foregroundStyle(.tint)
+                    }
+                    
+                    Button {
+                        newVorhaben = VorhabenModel()
+                        modelContext.insert(newVorhaben)
+                        addStandardAufgaben(vorhaben: newVorhaben)
+                        isNewVorhaben = true
+                        refresh.toggle()
+                    } label: {
+                        HStack(spacing: DesignSystem.Spacing.xs) {
+                            Image(systemName: "plus")
+                            Text("Neu")
+                        }
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.white)
+                    }
+                    .buttonStyle(ModernButtonStyle(color: .blue, isProminent: true))
                 }
-                Button("", systemImage: "plus") {
-                    newVorhaben = VorhabenModel()
-                    modelContext.insert(newVorhaben)
-                    addStandardAufgaben(vorhaben: newVorhaben)
-                    isNewVorhaben = true
-                    refresh.toggle()
-                }
-               
             }
             .onChange(of: searchText) {
                 //  refresh.toggle()
@@ -121,10 +139,13 @@ struct VorhabenListeView: View {
         } message: {
             Text("Soll das Vorhaben wirklich gelöscht werden")
         }
-        .sheet(isPresented: $isNewVorhaben){
+        .sheet(isPresented: $isNewVorhaben) {
             VorhabenEditor(vorhaben: newVorhaben, isNew: true)
         }
-        .onAppear(){
+        .sheet(isPresented: $showingStatsSheet) {
+            statsSheetView
+        }
+        .onAppear() {
             refresh.toggle()
         }
     }
@@ -133,6 +154,184 @@ struct VorhabenListeView: View {
         modelContext.delete(vorhaben)
     }
     
+    // MARK: - Stats Header View
+    private var statsHeaderView: some View {
+        let statsContainer = HStack(spacing: DesignSystem.Spacing.lg) {
+            StatCard(
+                title: "Gesamt",
+                value: "\(Vorhabens.count)",
+                icon: "target",
+                color: .blue
+            )
+            
+            StatCard(
+                title: "Aktiv",
+                value: "\(Vorhabens.filter { $0.phase < 9 }.count)",
+                icon: "play.circle.fill",
+                color: .green
+            )
+            
+            StatCard(
+                title: "Abgeschlossen",
+                value: "\(Vorhabens.filter { $0.phase >= 9 }.count)",
+                icon: "checkmark.circle.fill",
+                color: .orange
+            )
+        }
+        
+        return statsContainer
+            .modernCard(color: .blue)
+            .padding(.horizontal, DesignSystem.Spacing.lg)
+    }
+    
+    // MARK: - Empty State View
+    private var emptyStateView: some View {
+        let iconView = ZStack {
+            Circle()
+                .fill(LinearGradient(
+                    colors: [.blue.opacity(0.2), .purple.opacity(0.1)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ))
+                .frame(width: 120, height: 120)
+            
+            Image(systemName: "sparkles")
+                .font(.system(size: 50, weight: .light))
+                .foregroundStyle(.blue)
+        }
+        .shadow(color: .blue.opacity(0.2), radius: 20, x: 0, y: 10)
+        
+        let textContent = VStack(spacing: DesignSystem.Spacing.md) {
+            Text("Starten Sie Ihre Reise")
+                .font(.title)
+                .fontWeight(.bold)
+                .foregroundStyle(.primary)
+            
+            Text("Erstellen Sie Ihr erstes Vorhaben und verwandeln Sie Ihre Träume in erreichbare Ziele")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .lineLimit(3)
+        }
+        
+        let actionButton = Button {
+            newVorhaben = VorhabenModel()
+            modelContext.insert(newVorhaben)
+            addStandardAufgaben(vorhaben: newVorhaben)
+            isNewVorhaben = true
+            refresh.toggle()
+        } label: {
+            HStack(spacing: DesignSystem.Spacing.sm) {
+                Image(systemName: "plus.circle.fill")
+                Text("Erstes Vorhaben erstellen")
+            }
+            .fontWeight(.semibold)
+            .foregroundStyle(.white)
+        }
+        .buttonStyle(ModernButtonStyle(color: .blue, isProminent: true))
+        
+        return VStack(spacing: DesignSystem.Spacing.xxl) {
+            iconView
+            textContent
+            actionButton
+        }
+        .padding(DesignSystem.Spacing.xxl)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .modernCard(color: .blue, cornerRadius: DesignSystem.CornerRadius.xxl)
+        .padding(DesignSystem.Spacing.lg)
+    }
+    
+    // MARK: - Stats Sheet View
+    private var statsSheetView: some View {
+        NavigationStack {
+            ScrollView {
+                LazyVStack(spacing: DesignSystem.Spacing.lg) {
+                    VStack(spacing: DesignSystem.Spacing.lg) {
+                        // Iterate through Int keys instead of String keys
+                        ForEach(Array(Lebensbereiche.keys.sorted()), id: \.self) { bereichKey in
+                            let count = Vorhabens.filter { $0.lebensbereich == bereichKey }.count
+                            if count > 0, let bereichName = Lebensbereiche[bereichKey] {
+                                statsRowView(bereichKey: bereichKey, bereichName: bereichName, count: count)
+                            }
+                        }
+                    }
+                }
+                .padding(DesignSystem.Spacing.lg)
+            }
+            .navigationTitle("Statistiken")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Fertig") {
+                        showingStatsSheet = false
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+    
+    // Helper view for stats rows
+    private func statsRowView(bereichKey: Int, bereichName: String, count: Int) -> some View {
+        let bereichColor = LebensbereicheColor[bereichKey] ?? .gray
+        let bereichIconString = LebensbereicheIcon[bereichKey] ?? "circle"
+        
+        let contentRow = HStack {
+            Image(systemName: bereichIconString)
+                .foregroundStyle(bereichColor)
+            
+            Text(bereichName)
+                .fontWeight(.medium)
+            
+            Spacer()
+            
+            Text("\(count)")
+                .fontWeight(.bold)
+                .foregroundStyle(bereichColor)
+        }
+        
+        return contentRow
+            .padding(DesignSystem.Spacing.md)
+            .modernCard(color: bereichColor)
+    }
+}
+
+// MARK: - Stat Card Component
+struct StatCard: View {
+    let title: String
+    let value: String
+    let icon: String
+    let color: Color
+    
+    var body: some View {
+        let iconRow = HStack {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(color)
+            
+            Spacer()
+        }
+        
+        let valueText = Text(value)
+            .font(.title2)
+            .fontWeight(.bold)
+            .foregroundStyle(.primary)
+        
+        let titleText = Text(title)
+            .font(.caption)
+            .fontWeight(.medium)
+            .foregroundStyle(.secondary)
+        
+        return VStack(spacing: DesignSystem.Spacing.sm) {
+            iconRow
+            valueText
+            titleText
+        }
+        .padding(DesignSystem.Spacing.md)
+        .frame(maxWidth: .infinity)
+        .modernCard(color: color, cornerRadius: DesignSystem.CornerRadius.md)
+    }
 }
 
 

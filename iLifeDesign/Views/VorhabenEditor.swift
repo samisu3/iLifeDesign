@@ -19,6 +19,8 @@ struct VorhabenEditor: View {
     @FocusState private var titleFocused: Bool
     @State private var animateGradient = false
     
+    @Query(sort: \LebensbereichModel.sort) private var lebensbereiche: [LebensbereichModel]
+    
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -294,22 +296,19 @@ struct VorhabenEditor: View {
                         .fontWeight(.medium)
                     
                     Menu {
-                        ForEach(0...8, id: \.self) { bereich in
+                        ForEach(lebensbereiche.filter { $0.istAktiv }) { bereich in
                             Button {
-                                vorhaben.lebensbereich = bereich
+                                vorhaben.lebensbereichRef = bereich
+                                vorhaben.lebensbereich = bereich.sort
                             } label: {
                                 HStack {
-                                    Image(systemName: LebensbereicheIcon[bereich] ?? "circle")
-                                        .font(.caption)
-                                        .foregroundStyle(LebensbereicheColor[bereich] ?? .gray)
-                                        .frame(width: 16)
-                                    
-                                    Text(Lebensbereiche[bereich] ?? "")
-                                    
-                                    if vorhaben.lebensbereich == bereich {
+                                    Image(systemName: bereich.icon)
+                                        .foregroundStyle(bereich.viewFarbe)
+                                    Text(bereich.name)
+                                    if vorhaben.lebensbereichRef?.id == bereich.id {
                                         Spacer()
                                         Image(systemName: "checkmark")
-                                            .foregroundStyle(LebensbereicheColor[bereich] ?? .gray)
+                                            .foregroundStyle(bereich.viewFarbe)
                                     }
                                 }
                             }
@@ -318,13 +317,14 @@ struct VorhabenEditor: View {
                         HStack(spacing: 6) {
                             Image(systemName: vorhaben.viewLebensbereichIcon)
                                 .font(.caption)
-                                .foregroundStyle(LebensbereicheColor[vorhaben.lebensbereich] ?? .gray)
+                                .foregroundStyle(vorhaben.viewLebensbereichFarbe)
                                 .frame(width: 12)
                             
-                            Text(vorhaben.viewLebensbereich)
+                            Text(vorhaben.viewLebensbereich.isEmpty ? "Wählen…" : vorhaben.viewLebensbereich)
                                 .font(.caption)
                                 .fontWeight(.medium)
                                 .lineLimit(1)
+                                .foregroundStyle(vorhaben.viewLebensbereich.isEmpty ? .secondary : .primary)
                             
                             Spacer()
                             

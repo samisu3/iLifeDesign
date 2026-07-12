@@ -23,6 +23,6 @@ struct iLifeDesignApp: App {
             }
           // .tabViewStyle(.page)
         }
-        .modelContainer(for: VorhabenModel.self)
+        .modelContainer(for: [VorhabenModel.self, LebensbereichModel.self])
     }
 }
