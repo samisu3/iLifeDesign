@@ -24,7 +24,7 @@ struct CompactVorhabenCard: View {
                 .font(.caption)
                 .foregroundStyle(displayColor)
                 .frame(width: 16, height: 16)
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 HStack {
                     Text(vorhaben.bezeichnung)
@@ -32,9 +32,9 @@ struct CompactVorhabenCard: View {
                         .fontWeight(.medium)
                         .foregroundStyle(.primary)
                         .lineLimit(1)
-                    
+
                     Spacer()
-                    
+
                     // Kompakte Prioritäts-Sterne
                     HStack(spacing: 0) {
                         ForEach(0...4, id: \.self) { star in
@@ -44,7 +44,7 @@ struct CompactVorhabenCard: View {
                         }
                     }
                 }
-                
+
                 HStack {
                     // Phase oder Lebensbereich je nach View
                     if showPhase {
@@ -52,7 +52,6 @@ struct CompactVorhabenCard: View {
                             Image(systemName: vorhaben.viewPhaseIcon)
                                 .font(.system(size: 8))
                                 .foregroundStyle(displayColor)
-                            
                             Text(vorhaben.viewPhase)
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
@@ -63,17 +62,16 @@ struct CompactVorhabenCard: View {
                             Image(systemName: vorhaben.viewLebensbereichIcon)
                                 .font(.system(size: 8))
                                 .foregroundStyle(vorhaben.viewLebensbereichFarbe)
-                            
                             Text(vorhaben.viewLebensbereich)
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
                         }
                     }
-                    
+
                     Spacer()
-                    
-                    // Kompakter Progress
+
+                    // Fortschritt-Zähler
                     if vorhaben.viewAktuelleAufgabenAnzahl > 0 {
                         Text("\(vorhaben.viewAktuelleAufgabenAnzahlErledigt)/\(vorhaben.viewAktuelleAufgabenAnzahl)")
                             .font(.caption2)
@@ -98,10 +96,57 @@ struct CompactVorhabenCard: View {
     let vorhaben = VorhabenModel(bezeichnung: "Test Vorhaben", icon: 23, phase: 2, priority: 3, beschreibung: "Test", lebensbereich: 1)
     container.mainContext.insert(vorhaben)
     
-    return VStack(spacing: 10) {
-        CompactVorhabenCard(vorhaben: vorhaben, showPhase: true)
-        CompactVorhabenCard(vorhaben: vorhaben, showPhase: false)
+    return NavigationStack {
+        VStack(spacing: 10) {
+            VorhabenZeile(vorhaben: vorhaben, showPhase: true)
+            VorhabenZeile(vorhaben: vorhaben, showPhase: false)
+        }
+        .padding()
     }
-    .padding()
     .modelContainer(container)
+}
+
+// MARK: - VorhabenZeile
+// Zeile mit zwei Tap-Bereichen: links → VorhabenEditor, rechts → AufgabenListeView
+
+struct VorhabenZeile: View {
+    let vorhaben: VorhabenModel
+    let showPhase: Bool
+    var phaseColor: Color? = nil
+
+    @State private var zeigeAufgaben = false
+
+    private var displayColor: Color { phaseColor ?? vorhaben.viewColor }
+    private var phaseFertig: Bool { vorhaben.viewAktuelleAufgabenErledigt }
+
+    var body: some View {
+        HStack(spacing: 0) {
+
+            // ── Linke Seite: Navigation zum Editor ──────────────────────
+            NavigationLink {
+                VorhabenEditor(vorhaben: vorhaben)
+            } label: {
+                CompactVorhabenCard(vorhaben: vorhaben, showPhase: showPhase, phaseColor: phaseColor)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+
+            // ── Rechte Seite: Direkt zur nächsten Aktion ─────────────────
+            if vorhaben.viewAktuelleAufgabenAnzahl > 0 {
+                Button {
+                    zeigeAufgaben = true
+                } label: {
+                    Image(systemName: phaseFertig ? "checkmark.circle.fill" : "arrow.right.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundStyle(phaseFertig ? .green : displayColor)
+                        .padding(.leading, 8)
+                        .padding(.trailing, 4)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .fullScreenCover(isPresented: $zeigeAufgaben) {
+            AufgabenListeView(vorhaben: vorhaben)
+        }
+    }
 }

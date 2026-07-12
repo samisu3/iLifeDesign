@@ -240,12 +240,7 @@ struct LebensbereichGruppeView: View {
                 } else {
                     VStack(spacing: 6) {
                         ForEach(vorhabens) { vorhaben in
-                            NavigationLink {
-                                VorhabenEditor(vorhaben: vorhaben)
-                            } label: {
-                                CompactVorhabenCard(vorhaben: vorhaben, showPhase: true)
-                            }
-                            .buttonStyle(.plain)
+                            VorhabenZeile(vorhaben: vorhaben, showPhase: true, phaseColor: bereich.viewFarbe)
                         }
                     }
                     .padding(.horizontal, 10)

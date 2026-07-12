@@ -62,9 +62,6 @@ struct VorhabenListeView: View {
                     } else {
                         ScrollView {
                             LazyVStack(spacing: DesignSystem.Spacing.md) {
-                                // Stats Header
-                                statsHeaderView
-                                
                                 // Vorhaben List
                                 ForEach(Vorhabens) { vorhaben in
                                     NavigationLink {
@@ -139,36 +136,6 @@ struct VorhabenListeView: View {
     
     func deleteItems(vorhaben: VorhabenModel) {
         modelContext.delete(vorhaben)
-    }
-    
-    // MARK: - Stats Header View
-    private var statsHeaderView: some View {
-        let statsContainer = HStack(spacing: DesignSystem.Spacing.lg) {
-            StatCard(
-                title: "Gesamt",
-                value: "\(Vorhabens.count)",
-                icon: "target",
-                color: .blue
-            )
-            
-            StatCard(
-                title: "Aktiv",
-                value: "\(Vorhabens.filter { $0.phase < 9 }.count)",
-                icon: "play.circle.fill",
-                color: .green
-            )
-            
-            StatCard(
-                title: "Abgeschlossen",
-                value: "\(Vorhabens.filter { $0.phase >= 9 }.count)",
-                icon: "checkmark.circle.fill",
-                color: .orange
-            )
-        }
-        
-        return statsContainer
-            .modernCard(color: .blue)
-            .padding(.horizontal, DesignSystem.Spacing.lg)
     }
     
     // MARK: - Empty State View

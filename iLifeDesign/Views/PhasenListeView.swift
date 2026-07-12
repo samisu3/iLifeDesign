@@ -226,12 +226,7 @@ struct PhasenGruppeView: View {
                 } else {
                     VStack(spacing: 6) {
                         ForEach(vorhabens) { vorhaben in
-                            NavigationLink {
-                                VorhabenEditor(vorhaben: vorhaben)
-                            } label: {
-                                CompactVorhabenCard(vorhaben: vorhaben, showPhase: false, phaseColor: phase.viewFarbe)
-                            }
-                            .buttonStyle(.plain)
+                            VorhabenZeile(vorhaben: vorhaben, showPhase: false, phaseColor: phase.viewFarbe)
                         }
                     }
                     .padding(.horizontal, 10)

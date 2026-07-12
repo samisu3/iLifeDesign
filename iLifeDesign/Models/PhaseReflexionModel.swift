@@ -28,7 +28,6 @@ class PhaseReflexionModel {
     /// Datum und Uhrzeit des Phasenwechsels
     var datum: Date = Date()
 
-    @Relationship(deleteRule: .nullify, inverse: \VorhabenModel.reflexionen)
     var vorhaben: VorhabenModel?
 
     init(

@@ -374,47 +374,99 @@ struct VorhabenEditor: View {
     // MARK: - Next Steps Section
     private var nextStepsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Nächste Schritte")
+            Text("Nächste Aktion")
                 .font(.headline)
+
+            // Aktuelle Frage direkt anzeigen und anspringen
+            let nächsteFrage = vorhaben.viewAktuellNächsteAufgabe
 
             NavigationLink {
                 AufgabenListeView(vorhaben: vorhaben)
             } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Fragen für \(vorhaben.viewPhase)")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundStyle(.primary)
-
-                        HStack {
-                            Text("\(vorhaben.viewAktuelleAufgabenAnzahlErledigt) von \(vorhaben.viewAktuelleAufgabenAnzahl) beantwortet")
+                VStack(alignment: .leading, spacing: 10) {
+                    // Kopfzeile mit Phase und Fortschritt
+                    HStack {
+                        HStack(spacing: 5) {
+                            Image(systemName: vorhaben.viewPhaseIcon)
+                                .font(.caption2)
+                            Text(vorhaben.viewPhase)
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundStyle(vorhaben.viewColor)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background { Capsule().fill(vorhaben.viewColor.opacity(0.12)) }
 
-                            Spacer()
+                        Spacer()
 
-                            if vorhaben.viewAktuelleAufgabenAnzahl > 0 {
-                                ProgressView(
-                                    value: Double(vorhaben.viewAktuelleAufgabenAnzahlErledigt),
-                                    total: Double(vorhaben.viewAktuelleAufgabenAnzahl)
-                                )
-                                .frame(width: 60)
-                                .tint(vorhaben.viewColor)
+                        Text("\(vorhaben.viewAktuelleAufgabenAnzahlErledigt)/\(vorhaben.viewAktuelleAufgabenAnzahl)")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundStyle(vorhaben.viewColor)
+                    }
+
+                    if let frage = nächsteFrage {
+                        // Aktuelle Frage hervorheben
+                        HStack(spacing: 10) {
+                            Image(systemName: "questionmark.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(vorhaben.viewColor)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(frage.aufgabe)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.primary)
+                                    .multilineTextAlignment(.leading)
+                                    .lineLimit(2)
                             }
+
+                            Spacer(minLength: 0)
+
+                            Image(systemName: "arrow.right.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(vorhaben.viewColor)
+                        }
+                        .padding(12)
+                        .background {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(vorhaben.viewColor.opacity(0.07))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(vorhaben.viewColor.opacity(0.2), lineWidth: 1)
+                                }
+                        }
+                    } else {
+                        // Alle Fragen beantwortet
+                        HStack(spacing: 10) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(.green)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Phase abgeschlossen")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.primary)
+                                Text("Alle Fragen beantwortet · Antworten überarbeiten")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer(minLength: 0)
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
                         }
                     }
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption).foregroundStyle(.tertiary)
                 }
-                .padding(.horizontal, 16).padding(.vertical, 12)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
                 .background {
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .fill(.ultraThinMaterial)
                         .overlay {
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(vorhaben.viewColor.opacity(0.2), lineWidth: 1)
+                                .stroke(vorhaben.viewColor.opacity(0.25), lineWidth: 1)
                         }
                 }
             }
