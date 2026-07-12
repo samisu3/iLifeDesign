@@ -13,33 +13,12 @@ struct AufgabenListeView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    @State private var aktiverIndex: Int? = nil
-    @State private var scrollProxy: ScrollViewProxy? = nil
-    /// Neuer Date-Stempel = Fokus jetzt setzen. nil = kein Fokus.
-    @State private var fokusZeitpunkt: Date? = nil
+    // i = aktuelle Frage, auf der der Fokus liegt
+    @State private var i: Int = 0
 
-    // MARK: - Hilfsfunktionen
+    private var fragen: [AufgabeModel] { vorhaben.viewAktuelleAufgaben }
 
-    private var fragen: [AufgabeModel] {
-        vorhaben.viewAktuelleAufgaben
-    }
-
-    private var nächsteUnbeantwortetIndex: Int? {
-        fragen.firstIndex { $0.antwort.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-    }
-
-    private var alleBeantwortet: Bool {
-        fragen.allSatisfy { !$0.antwort.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-    }
-
-    private var abschlussfrage: AufgabeModel? {
-        fragen.last(where: { $0.istAbschlussfrage })
-    }
-
-    private var abschlussfrageBeantwortet: Bool {
-        guard let a = abschlussfrage else { return false }
-        return !a.antwort.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
+    private var abschlussfrage: AufgabeModel? { fragen.last(where: { $0.istAbschlussfrage }) }
 
     // MARK: - Body
 
@@ -58,18 +37,19 @@ struct AufgabenListeView: View {
                                 FrageCard(
                                     frage: frage,
                                     index: index,
-                                    istAktiv: aktiverIndex == index,
-                                    fokusZeitpunkt: aktiverIndex == index ? fokusZeitpunkt : nil,
+                                    istAktiv: i == index,
                                     phaseColor: vorhaben.viewColor,
                                     istAbschlussfrage: frage.istAbschlussfrage,
-                                    onNext: { handleNext(currentIndex: index) },
+                                    onNext: {
+                                        frage.erledigt = true
+                                        withAnimation(.spring(response: 0.35)) { i = index + 1 }
+                                        withAnimation { proxy.scrollTo(index + 1, anchor: .top) }
+                                    },
                                     onNächstePhase: { handleNächstePhase() }
                                 )
                                 .id(index)
                                 .onTapGesture {
-                                    withAnimation(.spring(response: 0.3)) {
-                                        aktiverIndex = index
-                                    }
+                                    withAnimation(.spring(response: 0.3)) { i = index }
                                 }
                             }
 
@@ -78,23 +58,13 @@ struct AufgabenListeView: View {
                         .padding(.horizontal, DesignSystem.Spacing.lg)
                         .padding(.vertical, DesignSystem.Spacing.sm)
                     }
-                    .id("phase-\(vorhaben.phase)")
                     .onAppear {
-                        scrollProxy = proxy
-                        let zielIndex = nächsteUnbeantwortetIndex ?? 0
-                        aktiverIndex = zielIndex
-                        // 1. Warten bis fullScreenCover vollständig eingeblendet ist
-                        // 2. Scrollen zur Ziel-Frage
-                        // 3. Warten bis Scroll fertig und Karte gerendert
-                        // 4. Fokus setzen → Tastatur öffnet sich
-                        Task {
-                            try? await Task.sleep(for: .milliseconds(450))
-                            withAnimation(.easeInOut(duration: 0.35)) {
-                                proxy.scrollTo(zielIndex, anchor: .top)
-                            }
-                            try? await Task.sleep(for: .milliseconds(450))
-                            fokusZeitpunkt = Date()
-                        }
+                        i = fragen.firstIndex { $0.antwort.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty } ?? 0
+                        proxy.scrollTo(i, anchor: .top)
+                    }
+                    .onChange(of: vorhaben.phase) { _, _ in
+                        i = 0
+                        withAnimation { proxy.scrollTo(0, anchor: .top) }
                     }
                 }
             }
@@ -103,18 +73,6 @@ struct AufgabenListeView: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button("Fertig") { dismiss() }
-                }
-            }
-            .onChange(of: vorhaben.phase) { _, _ in
-                fokusZeitpunkt = nil
-                withAnimation(.spring(response: 0.4)) {
-                    aktiverIndex = nächsteUnbeantwortetIndex ?? 0
-                }
-                Task {
-                    try? await Task.sleep(for: .milliseconds(200))
-                    withAnimation { scrollProxy?.scrollTo(0, anchor: .top) }
-                    try? await Task.sleep(for: .milliseconds(450))
-                    fokusZeitpunkt = Date()
                 }
             }
         }
@@ -182,26 +140,6 @@ struct AufgabenListeView: View {
 
     // MARK: - Aktionen
 
-    private func handleNext(currentIndex: Int) {
-        let frage = fragen[currentIndex]
-        let antwort = frage.antwort.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !antwort.isEmpty { frage.erledigt = true }
-
-        let nextIndex = currentIndex + 1
-        guard nextIndex < fragen.count else { return }
-
-        fokusZeitpunkt = nil
-        withAnimation(.spring(response: 0.35)) {
-            aktiverIndex = nextIndex
-        }
-        Task {
-            try? await Task.sleep(for: .milliseconds(200))
-            withAnimation { scrollProxy?.scrollTo(nextIndex, anchor: .top) }
-            try? await Task.sleep(for: .milliseconds(350))
-            fokusZeitpunkt = Date()
-        }
-    }
-
     private func handleNächstePhase() {
         abschlussfrage?.erledigt = true
 
@@ -238,14 +176,12 @@ struct FrageCard: View {
     @Bindable var frage: AufgabeModel
     let index: Int
     let istAktiv: Bool
-    /// Neuer Date-Stempel von AufgabenListeView → Fokus jetzt ins Textfeld setzen
-    let fokusZeitpunkt: Date?
     let phaseColor: Color
     let istAbschlussfrage: Bool
     var onNext: () -> Void
     var onNächstePhase: () -> Void
 
-    @FocusState private var textFeldFokussiert: Bool
+    @FocusState private var fokussiert: Bool
 
     private var istBeantwortet: Bool {
         !frage.antwort.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -318,8 +254,8 @@ struct FrageCard: View {
 
     @ViewBuilder
     private var antwortTextField: some View {
-        let borderColor: Color = textFeldFokussiert ? phaseColor : phaseColor.opacity(0.25)
-        let borderWidth: CGFloat = textFeldFokussiert ? 2 : 1
+        let borderColor: Color = fokussiert ? phaseColor : phaseColor.opacity(0.25)
+        let borderWidth: CGFloat = fokussiert ? 2 : 1
         let placeholder = istAbschlussfrage
             ? "Deine Kernaussage für diese Phase…"
             : "Was hast Du getan / erkannt…"
@@ -328,7 +264,7 @@ struct FrageCard: View {
             .font(.subheadline)
             .textFieldStyle(.plain)
             .lineLimit(2...6)
-            .focused($textFeldFokussiert)
+            .focused($fokussiert)
             .padding(DesignSystem.Spacing.md)
             .background {
                 RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
@@ -338,10 +274,8 @@ struct FrageCard: View {
                             .stroke(borderColor, lineWidth: borderWidth)
                     }
             }
-            // Fokus setzen sobald AufgabenListeView den Zeitstempel setzt
-            .onChange(of: fokusZeitpunkt) { _, zeitpunkt in
-                guard zeitpunkt != nil, !istBeantwortet else { return }
-                textFeldFokussiert = true
+            .onChange(of: istAktiv) { _, aktiv in
+                if aktiv && !istBeantwortet { fokussiert = true }
             }
             .onChange(of: frage.antwort) { _, neu in
                 frage.erledigt = !neu.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty

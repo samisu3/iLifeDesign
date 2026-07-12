@@ -110,7 +110,7 @@ struct CompactVorhabenCard: View {
 // Zeile mit zwei Tap-Bereichen: links → VorhabenEditor, rechts → AufgabenListeView
 
 struct VorhabenZeile: View {
-    let vorhaben: VorhabenModel
+    @Bindable var vorhaben: VorhabenModel
     let showPhase: Bool
     var phaseColor: Color? = nil
 

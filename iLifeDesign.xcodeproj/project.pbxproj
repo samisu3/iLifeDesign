@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		280567E62FB74F36003CD1A9 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280567E52FB74F36003CD1A9 /* DesignSystem.swift */; };
+		28324EEE3003F900002D21CC /* AufgabenListeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28E945313003F7B9007BF2BF /* AufgabenListeView.swift */; };
 		284135063003CEEC00D0CCBB /* LebensbereichModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 284135053003CEEC00D0CCBB /* LebensbereichModel.swift */; };
 		284135083003CF0100D0CCBB /* LebensbereichEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 284135073003CF0100D0CCBB /* LebensbereichEditor.swift */; };
 		2841350A3003CF0600D0CCBB /* LebensbereicheView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 284135093003CF0600D0CCBB /* LebensbereicheView.swift */; };
@@ -35,7 +36,7 @@
 		2893EE622F6C586D004BDECD /* VorhabenEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VorhabenEditor.swift; sourceTree = "<group>"; };
 		2893EE782F6C8632004BDECD /* CompactVorhabenCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompactVorhabenCard.swift; sourceTree = "<group>"; };
 		28C60DAD3003E444007E1E8C /* PhaseReflexionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseReflexionModel.swift; sourceTree = "<group>"; };
-		28E945313003F7B9007BF2BF /* AufgabenListeView 2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AufgabenListeView 2.swift"; sourceTree = "<group>"; };
+		28E945313003F7B9007BF2BF /* AufgabenListeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AufgabenListeView.swift; sourceTree = "<group>"; };
 		28EBE16E3003D6CC00CF6C6F /* PhaseModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseModel.swift; sourceTree = "<group>"; };
 		28EBE1703003D6E500CF6C6F /* PhaseEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseEditor.swift; sourceTree = "<group>"; };
 		28EBE1763003DAA700CF6C6F /* PhasenListeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhasenListeView.swift; sourceTree = "<group>"; };
@@ -116,7 +117,7 @@
 			isa = PBXGroup;
 			children = (
 				280567E52FB74F36003CD1A9 /* DesignSystem.swift */,
-				28E945313003F7B9007BF2BF /* AufgabenListeView 2.swift */,
+				28E945313003F7B9007BF2BF /* AufgabenListeView.swift */,
 				2893EE782F6C8632004BDECD /* CompactVorhabenCard.swift */,
 				284135093003CF0600D0CCBB /* LebensbereicheView.swift */,
 				284135073003CF0100D0CCBB /* LebensbereichEditor.swift */,
@@ -217,6 +218,7 @@
 				B6FBAEA02C1F52EE00DB5785 /* VorhabenModel.swift in Sources */,
 				28EBE16F3003D6CC00CF6C6F /* PhaseModel.swift in Sources */,
 				B6FBAE932C1F51BE00DB5785 /* VorhabenView.swift in Sources */,
+				28324EEE3003F900002D21CC /* AufgabenListeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
