@@ -1,0 +1,142 @@
+//
+//  DesignSystem.swift
+//  iLifeDesign
+//
+//  Created by Assistant on 15.05.2026.
+//
+
+import SwiftUI
+
+// MARK: - Design System
+struct DesignSystem {
+    
+    // MARK: - Spacing
+    struct Spacing {
+        static let xs: CGFloat = 4
+        static let sm: CGFloat = 8
+        static let md: CGFloat = 12
+        static let lg: CGFloat = 16
+        static let xl: CGFloat = 20
+        static let xxl: CGFloat = 24
+        static let xxxl: CGFloat = 32
+    }
+    
+    // MARK: - Corner Radius
+    struct CornerRadius {
+        static let sm: CGFloat = 8
+        static let md: CGFloat = 12
+        static let lg: CGFloat = 16
+        static let xl: CGFloat = 20
+        static let xxl: CGFloat = 24
+    }
+    
+    // MARK: - Colors
+    struct Colors {
+        static let primaryBackground = Color(.systemBackground)
+        static let secondaryBackground = Color(.secondarySystemBackground)
+        static let tertiaryBackground = Color(.tertiarySystemBackground)
+        
+        // Gradient Backgrounds
+        static func backgroundGradient(for color: Color) -> LinearGradient {
+            LinearGradient(
+                colors: [
+                    color.opacity(0.08),
+                    color.opacity(0.03),
+                    Color(.systemBackground)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+        
+        static func cardGradient(for color: Color) -> LinearGradient {
+            LinearGradient(
+                colors: [
+                    color.opacity(0.15),
+                    color.opacity(0.05)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+    }
+}
+
+// MARK: - Custom View Extensions
+extension View {
+    // Modern Card Style
+    func modernCard(color: Color = .clear, cornerRadius: CGFloat = DesignSystem.CornerRadius.lg) -> some View {
+        self.background {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(Material.ultraThinMaterial)
+                .overlay {
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .stroke(color.opacity(0.3), lineWidth: 1)
+                }
+        }
+        .shadow(color: color.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+    
+    // Navigation Style
+    func modernNavigation() -> some View {
+        self.navigationBarTitleDisplayMode(.large)
+    }
+    
+    // Enhanced Card Style
+    func enhancedCard(
+        color: Color,
+        cornerRadius: CGFloat = DesignSystem.CornerRadius.lg,
+        padding: CGFloat = DesignSystem.Spacing.lg
+    ) -> some View {
+        self
+            .padding(padding)
+            .background {
+                ZStack {
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(DesignSystem.Colors.cardGradient(for: color))
+                    
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(Material.ultraThinMaterial)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                                .stroke(color.opacity(0.3), lineWidth: 1)
+                        }
+                }
+            }
+            .shadow(color: color.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+}
+
+// MARK: - Custom Button Styles
+struct ModernButtonStyle: ButtonStyle {
+    let color: Color
+    let isProminent: Bool
+    
+    init(color: Color, isProminent: Bool = false) {
+        self.color = color
+        self.isProminent = isProminent
+    }
+    
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding(.horizontal, DesignSystem.Spacing.lg)
+            .padding(.vertical, DesignSystem.Spacing.md)
+            .background {
+                if isProminent {
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md, style: .continuous)
+                        .fill(color)
+                        .shadow(color: color.opacity(0.3), radius: 4, x: 0, y: 2)
+                } else {
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md, style: .continuous)
+                        .fill(Material.ultraThinMaterial)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md, style: .continuous)
+                                .stroke(color.opacity(0.5), lineWidth: 1)
+                        }
+                        .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+                }
+            }
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+    }
+}

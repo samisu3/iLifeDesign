@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		28169BFC2F79471500375C3D /* iLifeDesignNew.icon in Resources */ = {isa = PBXBuildFile; fileRef = 28169BFB2F79471500375C3D /* iLifeDesignNew.icon */; };
 		2893EE632F6C586D004BDECD /* VorhabenEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2893EE622F6C586D004BDECD /* VorhabenEditor.swift */; };
 		2893EE672F6C5898004BDECD /* AufgabenListeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2893EE662F6C5898004BDECD /* AufgabenListeView.swift */; };
 		2893EE772F6C7976004BDECD /* PhasenListeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2893EE762F6C7976004BDECD /* PhasenListeView.swift */; };
@@ -23,6 +24,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		28169BFB2F79471500375C3D /* iLifeDesignNew.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = iLifeDesignNew.icon; sourceTree = "<group>"; };
 		2893EE622F6C586D004BDECD /* VorhabenEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VorhabenEditor.swift; sourceTree = "<group>"; };
 		2893EE662F6C5898004BDECD /* AufgabenListeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AufgabenListeView.swift; sourceTree = "<group>"; };
 		2893EE762F6C7976004BDECD /* PhasenListeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhasenListeView.swift; sourceTree = "<group>"; };
@@ -77,6 +79,7 @@
 				B6FBAE9E2C1F52CE00DB5785 /* Models */,
 				B6A536262C1815C00033C0D4 /* iLifeDesignApp.swift */,
 				B6A5362A2C1815C10033C0D4 /* Assets.xcassets */,
+				28169BFB2F79471500375C3D /* iLifeDesignNew.icon */,
 				B6A5362C2C1815C10033C0D4 /* Preview Content */,
 			);
 			path = iLifeDesign;
@@ -174,6 +177,7 @@
 			files = (
 				B6A5362E2C1815C10033C0D4 /* Preview Assets.xcassets in Resources */,
 				B6A5362B2C1815C10033C0D4 /* Assets.xcassets in Resources */,
+				28169BFC2F79471500375C3D /* iLifeDesignNew.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,7 +348,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = projektpraxis.iLifeDesign;
+				PRODUCT_BUNDLE_IDENTIFIER = ch.projektpraxis.iLifeDesign;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -376,7 +380,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = projektpraxis.iLifeDesign;
+				PRODUCT_BUNDLE_IDENTIFIER = ch.projektpraxis.iLifeDesign;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

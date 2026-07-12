@@ -47,43 +47,49 @@ struct VorhabenListeView: View {
     
     var body: some View {
         NavigationStack {
-            
-            List {
-                ForEach(Vorhabens){ vorhaben in
-                    NavigationLink {
-                        VorhabenEditor(vorhaben: vorhaben)
-                        // refresh.toggle()
-                    } label: {
-                        VorhabenView(vorhaben: vorhaben)
+            Group {
+                if Vorhabens.isEmpty {
+                    VStack(spacing: 20) {
+                        Image(systemName: "list.bullet.clipboard")
+                            .font(.system(size: 60))
+                            .foregroundColor(.secondary)
+                        
+                        VStack(spacing: 8) {
+                            Text("Keine Vorhaben vorhanden")
+                                .font(.title2)
+                                .fontWeight(.medium)
+                            
+                            Text("Fügen Sie Ihr erstes Vorhaben mit dem + hinzu")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
                     }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                    .padding(.vertical, 2)
-                }
-                .onDelete{ indexSet in
-                    let theIndex = indexSet.first
-                    VorhabenToDelete = Vorhabens[theIndex!]
-                    showDeleteAlert.toggle()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    List {
+                        ForEach(Vorhabens){ vorhaben in
+                            NavigationLink {
+                                VorhabenEditor(vorhaben: vorhaben)
+                                // refresh.toggle()
+                            } label: {
+                                VorhabenView(vorhaben: vorhaben)
+                            }
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .padding(.vertical, 2)
+                        }
+                        .onDelete{ indexSet in
+                            let theIndex = indexSet.first
+                            VorhabenToDelete = Vorhabens[theIndex!]
+                            showDeleteAlert.toggle()
+                        }
+                    }
+                    .listStyle(.plain)
+                    .contentMargins(.horizontal, 16, for: .scrollContent)
                 }
             }
-            .listStyle(.plain)
-            .contentMargins(.horizontal, 16, for: .scrollContent)
             .searchable(text: $searchText)
-            .alert(isPresented: $showDeleteAlert){
-                Alert(
-                    title: Text("Vorhaben löschen"),
-                    message: Text("Soll das Vorhaben wirklich gelöscht werden"),
-                    primaryButton: .destructive(Text("Löschen")) {
-                        deleteItems(vorhaben: VorhabenToDelete!)
-                        showDeleteAlert.toggle()
-                    },
-                    secondaryButton: .cancel(Text("Abbrechen")) {
-                        showDeleteAlert.toggle()
-                    }
-                    
-                )
-            }
-            
             .navigationTitle("Vorhaben")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar{
@@ -103,7 +109,17 @@ struct VorhabenListeView: View {
                 //  refresh.toggle()
             }
             .id(refresh)
-            
+        }
+        .alert("Vorhaben löschen", isPresented: $showDeleteAlert) {
+            Button("Löschen", role: .destructive) {
+                deleteItems(vorhaben: VorhabenToDelete!)
+                showDeleteAlert = false
+            }
+            Button("Abbrechen", role: .cancel) {
+                showDeleteAlert = false
+            }
+        } message: {
+            Text("Soll das Vorhaben wirklich gelöscht werden")
         }
         .sheet(isPresented: $isNewVorhaben){
             VorhabenEditor(vorhaben: newVorhaben, isNew: true)
