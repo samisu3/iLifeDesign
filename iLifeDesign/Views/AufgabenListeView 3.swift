@@ -3,8 +3,7 @@
 //  iLifeDesign
 //
 //  Created by Assistant on 19.03.2026.
-//  Überarbeitet: Sandra Sulzberger, 12.07.2026 -Version 17:04
-//
+//  Überarbeitet: Sandra Sulzberger, 12.07.2026
 
 import SwiftUI
 import SwiftData
@@ -14,10 +13,10 @@ struct AufgabenListeView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    /// Index der aktuell fokussierten Frage (nil = keine)
     @State private var aktiverIndex: Int? = nil
-    /// Scrollposition
     @State private var scrollProxy: ScrollViewProxy? = nil
+    /// Neuer Date-Stempel = Fokus jetzt setzen. nil = kein Fokus.
+    @State private var fokusZeitpunkt: Date? = nil
 
     // MARK: - Hilfsfunktionen
 
@@ -33,7 +32,6 @@ struct AufgabenListeView: View {
         fragen.allSatisfy { !$0.antwort.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
 
-    /// Abschlussfrage ist die letzte Frage der Phase (istAbschlussfrage == true)
     private var abschlussfrage: AufgabeModel? {
         fragen.last(where: { $0.istAbschlussfrage })
     }
@@ -56,11 +54,12 @@ struct AufgabenListeView: View {
                         LazyVStack(spacing: DesignSystem.Spacing.lg) {
                             headerSection
 
-                            ForEach(Array(fragen.enumerated()), id: \.element) { index, frage in
+                            ForEach(Array(fragen.enumerated()), id: \.element.persistentModelID) { index, frage in
                                 FrageCard(
                                     frage: frage,
                                     index: index,
                                     istAktiv: aktiverIndex == index,
+                                    fokusZeitpunkt: aktiverIndex == index ? fokusZeitpunkt : nil,
                                     phaseColor: vorhaben.viewColor,
                                     istAbschlussfrage: frage.istAbschlussfrage,
                                     onNext: { handleNext(currentIndex: index) },
@@ -79,10 +78,23 @@ struct AufgabenListeView: View {
                         .padding(.horizontal, DesignSystem.Spacing.lg)
                         .padding(.vertical, DesignSystem.Spacing.sm)
                     }
+                    .id("phase-\(vorhaben.phase)")
                     .onAppear {
                         scrollProxy = proxy
-                        // Ersten unbeantworteten Index aktivieren
-                        aktiverIndex = nächsteUnbeantwortetIndex ?? 0
+                        let zielIndex = nächsteUnbeantwortetIndex ?? 0
+                        aktiverIndex = zielIndex
+                        // 1. Warten bis fullScreenCover vollständig eingeblendet ist
+                        // 2. Scrollen
+                        // 3. Warten bis Scroll fertig
+                        // 4. Fokus setzen → Tastatur öffnet sich
+                        Task {
+                            try? await Task.sleep(for: .milliseconds(450))
+                            withAnimation(.easeInOut(duration: 0.35)) {
+                                proxy.scrollTo(zielIndex, anchor: .top)
+                            }
+                            try? await Task.sleep(for: .milliseconds(450))
+                            fokusZeitpunkt = Date()
+                        }
                     }
                 }
             }
@@ -91,6 +103,18 @@ struct AufgabenListeView: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button("Fertig") { dismiss() }
+                }
+            }
+            .onChange(of: vorhaben.phase) { _, _ in
+                fokusZeitpunkt = nil
+                withAnimation(.spring(response: 0.4)) {
+                    aktiverIndex = nächsteUnbeantwortetIndex ?? 0
+                }
+                Task {
+                    try? await Task.sleep(for: .milliseconds(200))
+                    withAnimation { scrollProxy?.scrollTo(0, anchor: .top) }
+                    try? await Task.sleep(for: .milliseconds(450))
+                    fokusZeitpunkt = Date()
                 }
             }
         }
@@ -160,37 +184,38 @@ struct AufgabenListeView: View {
 
     private func handleNext(currentIndex: Int) {
         let frage = fragen[currentIndex]
-        // Antwort setzen → erledigt automatisch
         let antwort = frage.antwort.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !antwort.isEmpty {
-            frage.erledigt = true
-        }
+        if !antwort.isEmpty { frage.erledigt = true }
 
         let nextIndex = currentIndex + 1
-        if nextIndex < fragen.count {
-            withAnimation(.spring(response: 0.35)) {
-                aktiverIndex = nextIndex
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                withAnimation { scrollProxy?.scrollTo(nextIndex, anchor: .top) }
-            }
+        guard nextIndex < fragen.count else { return }
+
+        fokusZeitpunkt = nil
+        withAnimation(.spring(response: 0.35)) {
+            aktiverIndex = nextIndex
+        }
+        Task {
+            try? await Task.sleep(for: .milliseconds(200))
+            withAnimation { scrollProxy?.scrollTo(nextIndex, anchor: .top) }
+            try? await Task.sleep(for: .milliseconds(350))
+            fokusZeitpunkt = Date()
         }
     }
 
     private func handleNächstePhase() {
-        // Abschlussfrage als erledigt markieren
         abschlussfrage?.erledigt = true
 
-        // Reflexion speichern
         let frage = abschlussfrage
         let reflexion = PhaseReflexionModel(
             phase: vorhaben.phase,
             phaseName: vorhaben.viewPhase,
             phaseIcon: vorhaben.viewPhaseIcon,
             phaseFarbeID: {
-                // FarbeID aus PhaseModel lesen
+                let aktuellePhase: Int = vorhaben.phase
                 let fetch = FetchDescriptor<PhaseModel>(
-                    predicate: #Predicate { $0.sort == vorhaben.phase }
+                    predicate: #Predicate<PhaseModel> { phaseModel in
+                        phaseModel.sort == aktuellePhase
+                    }
                 )
                 return (try? modelContext.fetch(fetch))?.first?.farbeID ?? "blue"
             }(),
@@ -201,11 +226,9 @@ struct AufgabenListeView: View {
         )
         modelContext.insert(reflexion)
 
-        // Phasenwechsel
         withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
             vorhaben.phase += 1
         }
-        dismiss()
     }
 }
 
@@ -215,6 +238,8 @@ struct FrageCard: View {
     @Bindable var frage: AufgabeModel
     let index: Int
     let istAktiv: Bool
+    /// Neuer Date-Stempel von außen → Fokus jetzt setzen
+    let fokusZeitpunkt: Date?
     let phaseColor: Color
     let istAbschlussfrage: Bool
     var onNext: () -> Void
@@ -226,125 +251,146 @@ struct FrageCard: View {
         !frage.antwort.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    // MARK: - Badge
+
+    @ViewBuilder
+    private var badgeView: some View {
+        let badgeFill: Color = istBeantwortet
+            ? phaseColor
+            : (istAbschlussfrage ? phaseColor.opacity(0.2) : Color(.systemGray5))
+        ZStack {
+            Circle()
+                .fill(badgeFill)
+                .frame(width: 28, height: 28)
+            if istBeantwortet {
+                Image(systemName: "checkmark")
+                    .font(.caption).fontWeight(.bold)
+                    .foregroundStyle(.white)
+            } else if istAbschlussfrage {
+                Image(systemName: "star.fill")
+                    .font(.caption2)
+                    .foregroundStyle(phaseColor)
+            } else {
+                Text("\(index + 1)")
+                    .font(.caption2).fontWeight(.bold)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    // MARK: - Action-Button-Zeile
+
+    @ViewBuilder
+    private var actionButtonRow: some View {
+        HStack {
+            Spacer()
+            if istAbschlussfrage {
+                Button { onNächstePhase() } label: {
+                    HStack(spacing: DesignSystem.Spacing.xs) {
+                        Text("Nächste Phase").fontWeight(.semibold)
+                        Image(systemName: "arrow.right.circle.fill")
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, DesignSystem.Spacing.lg)
+                    .padding(.vertical, DesignSystem.Spacing.sm)
+                    .background { Capsule().fill(phaseColor) }
+                }
+                .buttonStyle(.plain)
+                .transition(.scale.combined(with: .opacity))
+            } else {
+                Button { onNext() } label: {
+                    HStack(spacing: DesignSystem.Spacing.xs) {
+                        Text("Weiter").fontWeight(.medium)
+                        Image(systemName: "arrow.down.circle")
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(phaseColor)
+                }
+                .buttonStyle(.plain)
+                .transition(.scale.combined(with: .opacity))
+            }
+        }
+        .animation(.spring(response: 0.3), value: istBeantwortet)
+    }
+
+    // MARK: - Textfeld
+
+    @ViewBuilder
+    private var antwortTextField: some View {
+        let borderColor: Color = textFeldFokussiert ? phaseColor : phaseColor.opacity(0.25)
+        let borderWidth: CGFloat = textFeldFokussiert ? 2 : 1
+        let placeholder = istAbschlussfrage
+            ? "Deine Kernaussage für diese Phase…"
+            : "Was hast Du getan / erkannt…"
+
+        TextField(placeholder, text: $frage.antwort, axis: .vertical)
+            .font(.subheadline)
+            .textFieldStyle(.plain)
+            .lineLimit(2...6)
+            .focused($textFeldFokussiert)
+            .padding(DesignSystem.Spacing.md)
+            .background {
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
+                    .fill(.ultraThinMaterial)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
+                            .stroke(borderColor, lineWidth: borderWidth)
+                    }
+            }
+            // Fokus setzen sobald AufgabenListeView den Stempel setzt
+            .onChange(of: fokusZeitpunkt) { _, zeitpunkt in
+                guard zeitpunkt != nil, !istBeantwortet else { return }
+                textFeldFokussiert = true
+            }
+            .onChange(of: frage.antwort) { _, neu in
+                frage.erledigt = !neu.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            }
+    }
+
+    // MARK: - Hintergrund
+
+    @ViewBuilder
+    private var cardBackground: some View {
+        let fillStyle: AnyShapeStyle = istAbschlussfrage
+            ? AnyShapeStyle(phaseColor.opacity(0.08))
+            : AnyShapeStyle(.ultraThinMaterial)
+        let strokeColor: Color = istAbschlussfrage
+            ? phaseColor.opacity(istAktiv ? 0.6 : 0.3)
+            : phaseColor.opacity(istAktiv ? 0.4 : 0.1)
+        let strokeWidth: CGFloat = istAbschlussfrage ? 2 : 1
+        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
+            .fill(fillStyle)
+            .overlay {
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
+                    .stroke(strokeColor, lineWidth: strokeWidth)
+            }
+    }
+
+    // MARK: - Body
+
     var body: some View {
         VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
 
-            // MARK: Frage-Header
             HStack(spacing: DesignSystem.Spacing.sm) {
-                // Nummer-Badge oder Abschluss-Icon
-                ZStack {
-                    Circle()
-                        .fill(istBeantwortet ? phaseColor : (istAbschlussfrage ? phaseColor.opacity(0.2) : Color(.systemGray5)))
-                        .frame(width: 28, height: 28)
-                    if istBeantwortet {
-                        Image(systemName: "checkmark")
-                            .font(.caption).fontWeight(.bold)
-                            .foregroundStyle(.white)
-                    } else if istAbschlussfrage {
-                        Image(systemName: "star.fill")
-                            .font(.caption2)
-                            .foregroundStyle(phaseColor)
-                    } else {
-                        Text("\(index + 1)")
-                            .font(.caption2).fontWeight(.bold)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
+                badgeView
                 Text(frage.aufgabe)
                     .font(istAbschlussfrage ? .subheadline.bold() : .subheadline)
                     .foregroundStyle(istAbschlussfrage ? phaseColor : .primary)
                     .multilineTextAlignment(.leading)
-
                 Spacer()
             }
 
-            // MARK: Antwort-Textfeld (nur wenn aktiv oder bereits beantwortet)
             if istAktiv || istBeantwortet {
-                TextField("Deine Antwort…", text: $frage.antwort, axis: .vertical)
-                    .font(.subheadline)
-                    .textFieldStyle(.plain)
-                    .lineLimit(2...6)
-                    .focused($textFeldFokussiert)
-                    .padding(DesignSystem.Spacing.md)
-                    .background {
-                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
-                            .fill(.ultraThinMaterial)
-                            .overlay {
-                                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
-                                    .stroke(
-                                        textFeldFokussiert ? phaseColor : phaseColor.opacity(0.25),
-                                        lineWidth: textFeldFokussiert ? 2 : 1
-                                    )
-                            }
-                    }
-                    .onAppear {
-                        if istAktiv && !istBeantwortet {
-                            textFeldFokussiert = true
-                        }
-                    }
-                    .onChange(of: frage.antwort) { _, neu in
-                        // Erledigt automatisch setzen wenn Antwort vorhanden
-                        frage.erledigt = !neu.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                    }
+                antwortTextField
 
-                // MARK: Next / Nächste Phase Button
                 if istAktiv && istBeantwortet {
-                    HStack {
-                        Spacer()
-                        if istAbschlussfrage {
-                            Button {
-                                onNächstePhase()
-                            } label: {
-                                HStack(spacing: DesignSystem.Spacing.xs) {
-                                    Text("Nächste Phase")
-                                        .fontWeight(.semibold)
-                                    Image(systemName: "arrow.right.circle.fill")
-                                }
-                                .font(.subheadline)
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, DesignSystem.Spacing.lg)
-                                .padding(.vertical, DesignSystem.Spacing.sm)
-                                .background {
-                                    Capsule().fill(phaseColor)
-                                }
-                            }
-                            .buttonStyle(.plain)
-                            .transition(.scale.combined(with: .opacity))
-                        } else {
-                            Button {
-                                onNext()
-                            } label: {
-                                HStack(spacing: DesignSystem.Spacing.xs) {
-                                    Text("Weiter")
-                                        .fontWeight(.medium)
-                                    Image(systemName: "arrow.down.circle")
-                                }
-                                .font(.subheadline)
-                                .foregroundStyle(phaseColor)
-                            }
-                            .buttonStyle(.plain)
-                            .transition(.scale.combined(with: .opacity))
-                        }
-                    }
-                    .animation(.spring(response: 0.3), value: istBeantwortet)
+                    actionButtonRow
                 }
             }
         }
         .padding(DesignSystem.Spacing.lg)
-        .background {
-            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                .fill(istAbschlussfrage ? phaseColor.opacity(0.08) : .ultraThinMaterial)
-                .overlay {
-                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                        .stroke(
-                            istAbschlussfrage
-                                ? phaseColor.opacity(istAktiv ? 0.6 : 0.3)
-                                : phaseColor.opacity(istAktiv ? 0.4 : 0.1),
-                            lineWidth: istAbschlussfrage ? 2 : 1
-                        )
-                }
-        }
+        .background { cardBackground }
         .animation(.spring(response: 0.3), value: istAktiv)
         .animation(.spring(response: 0.3), value: istBeantwortet)
     }
