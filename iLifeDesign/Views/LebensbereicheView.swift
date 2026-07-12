@@ -20,12 +20,18 @@ struct LebensbereicheView: View {
     @State private var isNeuerBereich = false
     @State private var neuerBereich: LebensbereichModel?
     @State private var bearbeiteterBereich: LebensbereichModel?
-    @State private var zeigeInaktive = false
+    @State private var zeigeLeere = true
 
     private var sichtbareLebensbereiche: [LebensbereichModel] {
-        let liste = zeigeInaktive ? lebensbereiche : lebensbereiche.filter { $0.istAktiv }
+        let liste: [LebensbereichModel]
+        if zeigeLeere {
+            liste = lebensbereiche
+        } else {
+            liste = lebensbereiche.filter { bereich in
+                !(bereich.vorhaben?.isEmpty ?? true)
+            }
+        }
         return liste.sorted {
-            // Primär: Priorität absteigend, sekundär: Sort aufsteigend
             if $0.prioritaet != $1.prioritaet { return $0.prioritaet > $1.prioritaet }
             return $0.sort < $1.sort
         }
@@ -65,12 +71,12 @@ struct LebensbereicheView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
-                        withAnimation { zeigeInaktive.toggle() }
+                        withAnimation { zeigeLeere.toggle() }
                     } label: {
-                        Image(systemName: zeigeInaktive ? "eye.fill" : "eye.slash")
-                            .foregroundStyle(zeigeInaktive ? .primary : .secondary)
+                        Image(systemName: zeigeLeere ? "eye.fill" : "eye.slash")
+                            .foregroundStyle(zeigeLeere ? .primary : .secondary)
                     }
-                    .help(zeigeInaktive ? "Inaktive ausblenden" : "Inaktive einblenden")
+                    .help(zeigeLeere ? "Leere Lebensbereiche ausblenden" : "Leere Lebensbereiche einblenden")
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
@@ -99,6 +105,7 @@ struct LebensbereicheView: View {
         }
         .sheet(isPresented: $isNewVorhaben) {
             VorhabenEditor(vorhaben: newVorhaben, isNew: true)
+                .interactiveDismissDisabled()
         }
         .sheet(isPresented: $isNeuerBereich) {
             if let bereich = neuerBereich {

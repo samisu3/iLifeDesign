@@ -18,6 +18,7 @@ struct VorhabenEditor: View {
     @State private var showDeleteAlert = false
     @FocusState private var titleFocused: Bool
     @State private var animateGradient = false
+    @State private var zeigeVerlauf = false
     
     @Query(sort: \LebensbereichModel.sort) private var lebensbereiche: [LebensbereichModel]
     
@@ -375,40 +376,39 @@ struct VorhabenEditor: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Nächste Schritte")
                 .font(.headline)
-            
+
             NavigationLink {
                 AufgabenListeView(vorhaben: vorhaben)
             } label: {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Aufgaben für \(vorhaben.viewPhase)")
+                        Text("Fragen für \(vorhaben.viewPhase)")
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .foregroundStyle(.primary)
-                        
+
                         HStack {
-                            Text("\(vorhaben.viewAktuelleAufgabenAnzahlErledigt) von \(vorhaben.viewAktuelleAufgabenAnzahl) erledigt")
+                            Text("\(vorhaben.viewAktuelleAufgabenAnzahlErledigt) von \(vorhaben.viewAktuelleAufgabenAnzahl) beantwortet")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                            
+
                             Spacer()
-                            
+
                             if vorhaben.viewAktuelleAufgabenAnzahl > 0 {
-                                ProgressView(value: Double(vorhaben.viewAktuelleAufgabenAnzahlErledigt), total: Double(vorhaben.viewAktuelleAufgabenAnzahl))
-                                    .frame(width: 60)
-                                    .tint(vorhaben.viewColor)
+                                ProgressView(
+                                    value: Double(vorhaben.viewAktuelleAufgabenAnzahlErledigt),
+                                    total: Double(vorhaben.viewAktuelleAufgabenAnzahl)
+                                )
+                                .frame(width: 60)
+                                .tint(vorhaben.viewColor)
                             }
                         }
                     }
-                    
                     Spacer()
-                    
                     Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                        .font(.caption).foregroundStyle(.tertiary)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .padding(.horizontal, 16).padding(.vertical, 12)
                 .background {
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .fill(.ultraThinMaterial)
@@ -419,8 +419,13 @@ struct VorhabenEditor: View {
                 }
             }
             .buttonStyle(.plain)
-            
-            // Delete Button (nur wenn nicht neu)
+
+            // MARK: Verlauf (ausklappbar)
+            if !isNew {
+                verlaufSection
+            }
+
+            // MARK: Löschen
             if !isNew {
                 Button {
                     showDeleteAlert = true
@@ -429,10 +434,8 @@ struct VorhabenEditor: View {
                         Image(systemName: "trash")
                         Text("Vorhaben löschen")
                     }
-                    .font(.subheadline)
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
+                    .font(.subheadline).foregroundStyle(.red)
+                    .frame(maxWidth: .infinity).padding(.vertical, 12)
                     .background {
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .fill(.red.opacity(0.1))
@@ -441,7 +444,130 @@ struct VorhabenEditor: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.bottom, 40) // Extra spacing at bottom
+        .padding(.bottom, 40)
+    }
+
+    // MARK: - Verlauf Section
+
+    private var verlaufSection: some View {
+        let reflexionen = (vorhaben.reflexionen ?? [])
+            .sorted { $0.datum > $1.datum } // neueste zuerst
+
+        return VStack(alignment: .leading, spacing: 0) {
+            // Header-Button zum Aufklappen
+            Button {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    zeigeVerlauf.toggle()
+                }
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                        .font(.subheadline)
+                        .foregroundStyle(vorhaben.viewColor)
+
+                    Text("Verlauf")
+                        .font(.subheadline).fontWeight(.semibold)
+                        .foregroundStyle(.primary)
+
+                    Text("(\(reflexionen.count))")
+                        .font(.caption).foregroundStyle(.secondary)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.down")
+                        .font(.caption.bold()).foregroundStyle(.secondary)
+                        .rotationEffect(.degrees(zeigeVerlauf ? 0 : -90))
+                }
+                .padding(.horizontal, 16).padding(.vertical, 12)
+            }
+            .buttonStyle(.plain)
+
+            if zeigeVerlauf {
+                Divider().padding(.horizontal, 12)
+
+                if reflexionen.isEmpty {
+                    HStack(spacing: 8) {
+                        Image(systemName: "tray")
+                            .font(.caption).foregroundStyle(.secondary)
+                        Text("Noch kein Verlauf — Fragen beantworten und zur nächsten Phase wechseln.")
+                            .font(.caption).foregroundStyle(.secondary).italic()
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 12)
+                } else {
+                    VStack(spacing: 10) {
+                        ForEach(reflexionen) { reflexion in
+                            VerlaufKarte(reflexion: reflexion)
+                        }
+                    }
+                    .padding(.horizontal, 12).padding(.vertical, 10)
+                }
+            }
+        }
+        .background {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(vorhaben.viewColor.opacity(0.15), lineWidth: 1)
+                }
+        }
+    }
+}
+
+// MARK: - Verlauf Karte
+
+struct VerlaufKarte: View {
+    let reflexion: PhaseReflexionModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                ZStack {
+                    Circle()
+                        .fill(reflexion.viewFarbe.opacity(0.15))
+                        .frame(width: 28, height: 28)
+                    Image(systemName: reflexion.phaseIcon)
+                        .font(.caption2)
+                        .foregroundStyle(reflexion.viewFarbe)
+                }
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(reflexion.phaseName)
+                        .font(.caption).fontWeight(.semibold)
+                        .foregroundStyle(reflexion.viewFarbe)
+                    Text(reflexion.viewDatum)
+                        .font(.caption2).foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+
+            Text(reflexion.frage)
+                .font(.caption2).foregroundStyle(.secondary)
+                .italic()
+
+            if !reflexion.antwort.isEmpty {
+                Text(reflexion.antwort)
+                    .font(.caption).foregroundStyle(.primary)
+                    .padding(.horizontal, 10).padding(.vertical, 6)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(reflexion.viewFarbe.opacity(0.08))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(reflexion.viewFarbe.opacity(0.2), lineWidth: 1)
+                            }
+                    }
+            } else {
+                Text("(keine Antwort)")
+                    .font(.caption2).foregroundStyle(.tertiary).italic()
+            }
+        }
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .background {
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color(.systemGray6).opacity(0.5))
+        }
     }
 }
 

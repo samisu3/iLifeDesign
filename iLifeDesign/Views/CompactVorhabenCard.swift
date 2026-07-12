@@ -11,13 +11,18 @@ import SwiftData
 struct CompactVorhabenCard: View {
     let vorhaben: VorhabenModel
     let showPhase: Bool // true für LebensbereicheView, false für PhasenListeView
-    
+    /// Optionale Phasenfarbe – direkt aus PhaseModel übergeben, damit sie mit dem PhaseEditor übereinstimmt.
+    /// Wird nicht übergeben, fällt der View auf vorhaben.viewColor (hardcodiertes Dictionary) zurück.
+    var phaseColor: Color? = nil
+
+    private var displayColor: Color { phaseColor ?? vorhaben.viewColor }
+
     var body: some View {
         HStack(spacing: 8) {
             // Kleines Vorhaben Icon
             Image(systemName: vorhaben.viewIcon.isEmpty ? "target" : vorhaben.viewIcon)
                 .font(.caption)
-                .foregroundStyle(vorhaben.viewColor)
+                .foregroundStyle(displayColor)
                 .frame(width: 16, height: 16)
             
             VStack(alignment: .leading, spacing: 2) {
@@ -46,7 +51,7 @@ struct CompactVorhabenCard: View {
                         HStack(spacing: 2) {
                             Image(systemName: vorhaben.viewPhaseIcon)
                                 .font(.system(size: 8))
-                                .foregroundStyle(vorhaben.viewColor)
+                                .foregroundStyle(displayColor)
                             
                             Text(vorhaben.viewPhase)
                                 .font(.caption2)

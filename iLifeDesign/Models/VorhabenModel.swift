@@ -210,6 +210,9 @@ class VorhabenModel {
     var lebensbereichRef: LebensbereichModel?
     @Relationship(deleteRule: .cascade, inverse: \AufgabeModel.vorhaben)
     var aufgaben: [AufgabeModel]? = []
+    /// Abschluss-Reflexionen pro Phase — neueste zuerst anzeigen
+    @Relationship(deleteRule: .cascade, inverse: \PhaseReflexionModel.vorhaben)
+    var reflexionen: [PhaseReflexionModel]? = []
     
     init(bezeichnung: String = "", icon: Int = 0, phase: Int = 0, priority: Int = 1, beschreibung: String = "", lebensbereich: Int = 0, lebensbereichRef: LebensbereichModel? = nil, aufgaben: [AufgabeModel] = []) {
         self.bezeichnung = bezeichnung
@@ -266,7 +269,7 @@ extension VorhabenModel {
     }
     
     var viewColor: Color {
-        guard let theColor = PhaseColor[phase] else {return Color.red}
+        guard let theColor = PhaseColor[phase] else { return Color.blue }
         return theColor
     }
     

@@ -3,7 +3,7 @@
 //  iLifeDesign
 //
 //  Created by Assistant on 19.03.2026.
-//  Überarbeitet: Sandra Sulzberger, 12.07.2026
+//  Überarbeitet: Sandra Sulzberger, 12.07.2026 -Version 17:04
 //
 
 import SwiftUI

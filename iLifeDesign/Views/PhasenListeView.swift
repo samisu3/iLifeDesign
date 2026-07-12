@@ -20,7 +20,7 @@ struct PhasenListeView: View {
     @State private var newVorhaben = VorhabenModel()
     @State private var isNewVorhaben = false
     @State private var bearbeitetePhase: PhaseModel?
-    @State private var zeigeLeerePhase = false
+    @State private var zeigeLeerePhase = true
 
     /// Phasen filtern: leere Phasen ausblenden wenn zeigeLeerePhase == false
     private var sichtbarePhasen: [PhaseModel] {
@@ -92,6 +92,7 @@ struct PhasenListeView: View {
         }
         .sheet(isPresented: $isNewVorhaben) {
             VorhabenEditor(vorhaben: newVorhaben, isNew: true)
+                .interactiveDismissDisabled()
         }
         .sheet(item: $bearbeitetePhase) { phase in
             PhaseEditor(phase: phase)
@@ -228,7 +229,7 @@ struct PhasenGruppeView: View {
                             NavigationLink {
                                 VorhabenEditor(vorhaben: vorhaben)
                             } label: {
-                                CompactVorhabenCard(vorhaben: vorhaben, showPhase: false)
+                                CompactVorhabenCard(vorhaben: vorhaben, showPhase: false, phaseColor: phase.viewFarbe)
                             }
                             .buttonStyle(.plain)
                         }

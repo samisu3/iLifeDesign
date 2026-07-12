@@ -96,16 +96,8 @@ struct VorhabenListeView: View {
                         showingStatsSheet = true
                     } label: {
                         Image(systemName: "chart.bar.fill")
-                            .foregroundStyle(.tint)
                     }
-                    
-                    Button {
-                        refresh.toggle()
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                            .foregroundStyle(.tint)
-                    }
-                    
+
                     Button {
                         newVorhaben = VorhabenModel()
                         modelContext.insert(newVorhaben)
@@ -113,14 +105,8 @@ struct VorhabenListeView: View {
                         isNewVorhaben = true
                         refresh.toggle()
                     } label: {
-                        HStack(spacing: DesignSystem.Spacing.xs) {
-                            Image(systemName: "plus")
-                            Text("Neu")
-                        }
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.white)
+                        Image(systemName: "plus")
                     }
-                    .buttonStyle(ModernButtonStyle(color: .blue, isProminent: true))
                 }
             }
             .onChange(of: searchText) {
@@ -141,6 +127,7 @@ struct VorhabenListeView: View {
         }
         .sheet(isPresented: $isNewVorhaben) {
             VorhabenEditor(vorhaben: newVorhaben, isNew: true)
+                .interactiveDismissDisabled()
         }
         .sheet(isPresented: $showingStatsSheet) {
             statsSheetView

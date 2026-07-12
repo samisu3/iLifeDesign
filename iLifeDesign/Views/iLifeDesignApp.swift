@@ -18,10 +18,11 @@ struct iLifeDesignApp: App {
             AufgabeModel.self,
             LebensbereichModel.self,
             PhaseModel.self,
+            PhaseReflexionModel.self,
         ])
 
         // Aktuelle Schema-Version als String (bei jedem inkompatiblen Umbau erhöhen)
-        let currentSchemaVersion = "v8"
+        let currentSchemaVersion = "v9"
         let schemaVersionKey = "swiftdata_schema_version"
 
         if UserDefaults.standard.string(forKey: schemaVersionKey) != currentSchemaVersion {
