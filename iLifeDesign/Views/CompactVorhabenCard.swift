@@ -8,16 +8,70 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - Nächste Aktion Button
+// Gemeinsamer Button: zeigt die nächste offene Frage der aktuellen Phase
+// oder den Abgeschlossen-Zustand. Wird in Karten und im Editor verwendet.
+
+struct NächsteAktionButton: View {
+    let vorhaben: VorhabenModel
+    var farbe: Color? = nil
+    var action: () -> Void
+
+    private var displayColor: Color { farbe ?? vorhaben.viewColor }
+    private var fertig: Bool { vorhaben.viewAktuelleAufgabenErledigt }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                if fertig {
+                    Text("Phase abgeschlossen · Überarbeiten")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.green)
+                } else if let frage = vorhaben.viewAktuellNächsteAufgabe {
+                    Text(frage.aufgabe)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(displayColor)
+                        .lineLimit(1)
+                } else {
+                    Text("Nächste Aktion")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(displayColor)
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: fertig ? "checkmark.circle.fill" : "chevron.right")
+                    .font(.caption.bold())
+                    .foregroundStyle(fertig ? .green.opacity(0.7) : displayColor.opacity(0.7))
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            .background {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(fertig ? .green.opacity(0.12) : displayColor.opacity(0.12))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(
+                                fertig ? .green.opacity(0.3) : displayColor.opacity(0.25),
+                                lineWidth: 1
+                            )
+                    }
+            }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 struct CompactVorhabenCard: View {
     let vorhaben: VorhabenModel
     let showPhase: Bool
     var phaseColor: Color? = nil
     /// Callback wenn der Aktions-Button gedrückt wird
     var onAktion: (() -> Void)? = nil
-
-    private var displayColor: Color { phaseColor ?? vorhaben.viewColor }
-    private var phaseFertig: Bool { vorhaben.viewAktuelleAufgabenErledigt }
-    private var nächsteAufgabe: AufgabeModel? { vorhaben.viewAktuellNächsteAufgabe }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -26,11 +80,11 @@ struct CompactVorhabenCard: View {
             HStack(spacing: 10) {
                 ZStack {
                     Circle()
-                        .fill(displayColor.opacity(0.15))
+                        .fill(Color(.systemGray5))
                         .frame(width: 40, height: 40)
-                    Image(systemName: vorhaben.viewIcon.isEmpty ? "target" : vorhaben.viewIcon)
+                    Image(systemName: vorhaben.viewIcon)
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(displayColor)
+                        .foregroundStyle(Color(.systemGray))
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
@@ -57,7 +111,7 @@ struct CompactVorhabenCard: View {
                             HStack(spacing: 3) {
                                 Image(systemName: vorhaben.viewPhaseIcon)
                                     .font(.system(size: 9))
-                                    .foregroundStyle(displayColor)
+                                    .foregroundStyle(.secondary)
                                 Text(vorhaben.viewPhase)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
@@ -87,48 +141,9 @@ struct CompactVorhabenCard: View {
 
             // ── Aktions-Button ───────────────────────────────────────────
             if vorhaben.viewAktuelleAufgabenAnzahl > 0 {
-                Button {
+                NächsteAktionButton(vorhaben: vorhaben, farbe: phaseColor) {
                     onAktion?()
-                } label: {
-                    HStack(spacing: 8) {
-                        if phaseFertig {
-                            Text("Phase abgeschlossen · Überarbeiten")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.green)
-                        } else if let aufgabe = nächsteAufgabe {
-                            Text(aufgabe.aufgabe)
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.white)
-                                .lineLimit(1)
-                        } else {
-                            Text("Nächste Aktion")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.white)
-                        }
-
-                        Spacer(minLength: 0)
-
-                        Image(systemName: phaseFertig ? "checkmark.circle.fill" : "chevron.right")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(phaseFertig ? .green.opacity(0.7) : .white.opacity(0.7))
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 7)
-                    .background {
-                        RoundedRectangle(cornerRadius: 7, style: .continuous)
-                            .fill(phaseFertig ? .green.opacity(0.12) : displayColor)
-                            .overlay {
-                                if phaseFertig {
-                                    RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                        .stroke(.green.opacity(0.4), lineWidth: 1)
-                                }
-                            }
-                    }
                 }
-                .buttonStyle(.plain)
             }
         }
         .padding(.horizontal, 8)
@@ -144,7 +159,7 @@ struct CompactVorhabenCard: View {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: VorhabenModel.self, configurations: config)
     
-    let vorhaben = VorhabenModel(bezeichnung: "Test Vorhaben", icon: 23, phase: 2, priority: 3, beschreibung: "Test", lebensbereich: 1)
+    let vorhaben = VorhabenModel(bezeichnung: "Test Vorhaben", icon: "iphone", phase: 2, priority: 3, beschreibung: "Test", lebensbereich: 1)
     container.mainContext.insert(vorhaben)
     
     return NavigationStack {

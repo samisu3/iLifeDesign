@@ -21,6 +21,8 @@ struct PhasenListeView: View {
     @State private var isNewVorhaben = false
     @State private var bearbeitetePhase: PhaseModel?
     @State private var zeigeLeerePhase = true
+    @State private var zeigeQuickIdea = false
+    @State private var zeigeErinnerungen = false
 
     /// Phasen filtern: leere Phasen ausblenden wenn zeigeLeerePhase == false
     private var sichtbarePhasen: [PhaseModel] {
@@ -71,8 +73,8 @@ struct PhasenListeView: View {
             .navigationTitle("Phasen")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                // Auge: leere Phasen ein-/ausblenden
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItemGroup(placement: .navigationBarLeading) {
+                    // Auge: leere Phasen ein-/ausblenden
                     Button {
                         withAnimation { zeigeLeerePhase.toggle() }
                     } label: {
@@ -80,18 +82,23 @@ struct PhasenListeView: View {
                             .foregroundStyle(zeigeLeerePhase ? .primary : .secondary)
                     }
                     .help(zeigeLeerePhase ? "Leere Phasen ausblenden" : "Leere Phasen einblenden")
+
+                    // Glocke: Smart-Erinnerungen einstellen
+                    Button {
+                        zeigeErinnerungen = true
+                    } label: {
+                        Image(systemName: "bell")
+                    }
+                    .help("Erinnerungen einstellen")
                 }
-                // Plus: neues Vorhaben
+                // Plus: schnelle Idee festhalten (2-Minuten-Regel)
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        let vorhaben = VorhabenModel()
-                        modelContext.insert(vorhaben)
-                        addStandardAufgaben(vorhaben: vorhaben)
-                        newVorhaben = vorhaben
-                        isNewVorhaben = true
+                        zeigeQuickIdea = true
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .help("Neue Idee festhalten")
                 }
             }
         }
@@ -101,6 +108,12 @@ struct PhasenListeView: View {
         }
         .sheet(item: $bearbeitetePhase) { phase in
             PhaseEditor(phase: phase)
+        }
+        .sheet(isPresented: $zeigeQuickIdea) {
+            QuickIdeaView()
+        }
+        .sheet(isPresented: $zeigeErinnerungen) {
+            ErinnerungenView()
         }
         .onAppear {
             setupStandardPhasen(context: modelContext)
@@ -255,8 +268,8 @@ struct PhasenGruppeView: View {
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
     )
     setupStandardPhasen(context: container.mainContext)
-    let vorhaben1 = VorhabenModel(bezeichnung: "iLifeDesign", icon: 23, phase: 2, priority: 4, beschreibung: "Tool entwickeln", lebensbereich: 7)
-    let vorhaben2 = VorhabenModel(bezeichnung: "Balkon einrichten", icon: 2, phase: 2, priority: 2, beschreibung: "Schöner Balkon", lebensbereich: 5)
+    let vorhaben1 = VorhabenModel(bezeichnung: "iLifeDesign", icon: "iphone", phase: 2, priority: 4, beschreibung: "Tool entwickeln", lebensbereich: 2)
+    let vorhaben2 = VorhabenModel(bezeichnung: "Balkon einrichten", icon: "house", phase: 2, priority: 2, beschreibung: "Schöner Balkon", lebensbereich: 4)
     container.mainContext.insert(vorhaben1)
     container.mainContext.insert(vorhaben2)
     addStandardAufgaben(vorhaben: vorhaben1)

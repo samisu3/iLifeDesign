@@ -32,10 +32,7 @@ struct LebensbereicheView: View {
                 alleVorhaben.contains { $0.lebensbereichRef?.id == bereich.id }
             }
         }
-        return liste.sorted {
-            if $0.prioritaet != $1.prioritaet { return $0.prioritaet > $1.prioritaet }
-            return $0.sort < $1.sort
-        }
+        return liste.sorted { $0.sort < $1.sort }
     }
 
     var body: some View {
@@ -65,6 +62,7 @@ struct LebensbereicheView: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                     }
+                    .background(Color(.systemGroupedBackground).ignoresSafeArea())
                 }
             }
             .navigationTitle("Lebensbereiche")
@@ -161,8 +159,7 @@ struct LebensbereichGruppeView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
                             Text(bereich.name)
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
+                                .fontWeight(.regular)
                                 .foregroundStyle(bereich.istAktiv ? bereich.viewFarbe : .secondary)
 
                             Text("(\(vorhabens.count))")
@@ -170,19 +167,12 @@ struct LebensbereichGruppeView: View {
                                 .foregroundStyle(.secondary)
                         }
 
-                        HStack(spacing: 6) {
-                            if !bereich.beschreibung.isEmpty {
-                                Text(bereich.beschreibung)
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                            }
+                        if !bereich.beschreibung.isEmpty {
+                            Text(bereich.beschreibung)
+                                .font(.caption)
+                                .foregroundStyle(bereich.viewFarbe)
+                                .lineLimit(1)
                         }
-
-                        // Priorität-Sterne
-                        Text(bereich.viewPrioritätSterne)
-                            .font(.system(size: 10))
-                            .foregroundStyle(bereich.viewFarbe.opacity(0.8))
                     }
 
                     Spacer()
@@ -241,7 +231,7 @@ struct LebensbereichGruppeView: View {
                 } else {
                     VStack(spacing: 6) {
                         ForEach(vorhabens) { vorhaben in
-                            VorhabenZeile(vorhaben: vorhaben, showPhase: true, phaseColor: bereich.viewFarbe)
+                            VorhabenZeile(vorhaben: vorhaben, showPhase: true)
                         }
                     }
                     .padding(.horizontal, 10)
@@ -251,16 +241,7 @@ struct LebensbereichGruppeView: View {
         }
         .background {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(
-                            bereich.istAktiv
-                                ? bereich.viewFarbe.opacity(vorhabens.isEmpty ? 0.15 : 0.3)
-                                : Color.secondary.opacity(0.15),
-                            lineWidth: 1
-                        )
-                }
+                .fill(Color(.systemBackground))
         }
         .opacity(bereich.istAktiv ? 1.0 : 0.5)
     }

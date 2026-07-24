@@ -42,11 +42,11 @@ struct VorhabenEditor: View {
                         } label: {
                             ZStack {
                                 Circle()
-                                    .fill(vorhaben.viewColor.opacity(0.15))
+                                    .fill(Color(.systemGray5))
                                     .frame(width: 36, height: 36)
-                                Image(systemName: vorhaben.viewIcon.isEmpty ? "target" : vorhaben.viewIcon)
+                                Image(systemName: vorhaben.viewIcon)
                                     .font(.system(size: 16, weight: .medium))
-                                    .foregroundStyle(vorhaben.viewColor)
+                                    .foregroundStyle(Color(.systemGray))
                             }
                         }
                         .buttonStyle(.plain)
@@ -140,25 +140,25 @@ struct VorhabenEditor: View {
                         }
                     } label: {
                         let aktuellePhase = verfügbarePhasen.first { $0.sort == vorhaben.phase }
-                        let farbe = aktuellePhase?.viewFarbe ?? vorhaben.viewColor
                         HStack(spacing: 10) {
                             ZStack {
                                 Circle()
-                                    .fill(farbe.opacity(0.15))
+                                    .fill(Color(.systemGray5))
                                     .frame(width: 28, height: 28)
                                 Image(systemName: aktuellePhase?.icon ?? vorhaben.viewPhaseIcon)
                                     .font(.system(size: 13, weight: .medium))
-                                    .foregroundStyle(farbe)
+                                    .foregroundStyle(Color(.systemGray))
                             }
                             VStack(alignment: .leading, spacing: 1) {
                                 Text(aktuellePhase?.name ?? vorhaben.viewPhase)
-                                    .foregroundStyle(farbe)
+                                    .foregroundStyle(.primary)
                                 Text(aktuellePhase?.info ?? vorhaben.viewPhaseInfo)
                                     .font(.caption)
-                                    .foregroundStyle(farbe)
+                                    .foregroundStyle(.secondary)
                             }
                             Spacer()
                         }
+                        .contentShape(Rectangle())
                     }
                     .tint(.primary)
 
@@ -179,52 +179,9 @@ struct VorhabenEditor: View {
                     .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 0, trailing: 16))
 
                     // Nächste Aktion – Button
-                    let phaseFertig = vorhaben.viewAktuelleAufgabenErledigt
-                    let nächsteFrage = vorhaben.viewAktuellNächsteAufgabe
-
-                    Button {
+                    NächsteAktionButton(vorhaben: vorhaben) {
                         zeigeAufgaben = true
-                    } label: {
-                        HStack(spacing: 10) {
-                            if phaseFertig {
-                                Text("Phase abgeschlossen · Überarbeiten")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.green)
-                            } else if let frage = nächsteFrage {
-                                Text(frage.aufgabe)
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.white)
-                                    .lineLimit(1)
-                            } else {
-                                Text("Nächste Aktion starten")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.white)
-                            }
-
-                            Spacer(minLength: 0)
-
-                            Image(systemName: phaseFertig ? "checkmark.circle.fill" : "chevron.right")
-                                .font(.caption.bold())
-                                .foregroundStyle(phaseFertig ? .green.opacity(0.7) : .white.opacity(0.7))
-                        }
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 9)
-                        .frame(maxWidth: .infinity)
-                        .background {
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(phaseFertig ? .green.opacity(0.12) : vorhaben.viewColor)
-                                .overlay {
-                                    if phaseFertig {
-                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                            .stroke(.green.opacity(0.4), lineWidth: 1)
-                                    }
-                                }
-                        }
                     }
-                    .buttonStyle(.plain)
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
                 } header: {
@@ -319,17 +276,17 @@ struct VerlaufKarte: View {
             HStack(spacing: 8) {
                 ZStack {
                     Circle()
-                        .fill(reflexion.viewFarbe.opacity(0.15))
+                        .fill(Color(.systemGray5))
                         .frame(width: 28, height: 28)
                     Image(systemName: reflexion.phaseIcon)
                         .font(.caption2)
-                        .foregroundStyle(reflexion.viewFarbe)
+                        .foregroundStyle(Color(.systemGray))
                 }
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(reflexion.phaseName)
                         .font(.caption).fontWeight(.semibold)
-                        .foregroundStyle(reflexion.viewFarbe)
+                        .foregroundStyle(.primary)
                     Text(reflexion.viewDatum)
                         .font(.caption2).foregroundStyle(.secondary)
                 }

@@ -107,6 +107,71 @@ extension View {
     }
 }
 
+// MARK: - Entdecker-Botschaften (Identity Shift)
+// Kurze identitätsstiftende Botschaften nach kleinen Erfolgen —
+// die App bestätigt nicht die Aufgabe, sondern die Rolle als Entdecker:in.
+
+let EntdeckerBotschaften: [String] = [
+    "Du bist heute 1 % mehr Entdecker:in als gestern.",
+    "Expeditions-Level gestiegen! 🧭",
+    "Kleine Experimente, grosse Wirkung.",
+    "Wieder einen Schritt mutiger als gestern.",
+    "Deine Neugier zahlt sich aus.",
+    "So sehen Menschen aus, die Dinge ausprobieren.",
+]
+
+// MARK: - Konfetti (Belohnungs-Effekt)
+// Leichter Partikel-Effekt für Phasenabschlüsse — ohne externe Abhängigkeiten.
+
+struct KonfettiView: View {
+    private let farben: [Color] = [.blue, .green, .orange, .pink, .purple, .yellow, .teal]
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                ForEach(0..<36, id: \.self) { i in
+                    KonfettiTeilchen(
+                        farbe: farben[i % farben.count],
+                        feldBreite: geo.size.width,
+                        feldHöhe: geo.size.height,
+                        verzögerung: Double(i % 12) * 0.04
+                    )
+                }
+            }
+        }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+    }
+}
+
+private struct KonfettiTeilchen: View {
+    let farbe: Color
+    let feldBreite: CGFloat
+    let feldHöhe: CGFloat
+    let verzögerung: Double
+
+    @State private var fällt = false
+
+    private let x = CGFloat.random(in: 0.02...0.98)
+    private let drehung = Double.random(in: 0...360)
+    private let grösse = CGFloat.random(in: 7...12)
+    private let dauer = Double.random(in: 1.6...2.6)
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 2)
+            .fill(farbe)
+            .frame(width: grösse, height: grösse * 0.6)
+            .rotationEffect(.degrees(fällt ? drehung + 540 : drehung))
+            .position(x: x * feldBreite, y: fällt ? feldHöhe + 30 : -30)
+            .opacity(fällt ? 0.85 : 1)
+            .onAppear {
+                withAnimation(.easeIn(duration: dauer).delay(verzögerung)) {
+                    fällt = true
+                }
+            }
+    }
+}
+
 // MARK: - Custom Button Styles
 struct ModernButtonStyle: ButtonStyle {
     let color: Color

@@ -12,42 +12,40 @@ struct SymbolPickerView: View {
     @Bindable var vorhaben: VorhabenModel
     @Environment(\.dismiss) private var dismiss
     @State private var searchText = ""
-    
+
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 6)
-    
-    private var filteredIcons: [Int] {
+
+    private var filteredIcons: [String] {
         if searchText.isEmpty {
-            return Array(0...79)
-        } else {
-            return Array(0...79).filter { iconIndex in
-                guard let iconName = VorhabenIcons[iconIndex] else { return false }
-                return iconName.localizedCaseInsensitiveContains(searchText)
-            }
+            return VorhabenVerfügbareIcons
+        }
+        return VorhabenVerfügbareIcons.filter {
+            $0.localizedCaseInsensitiveContains(searchText)
         }
     }
-    
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 12) {
-                    ForEach(filteredIcons, id: \.self) { iconIndex in
+                    ForEach(filteredIcons, id: \.self) { icon in
                         Button {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                vorhaben.icon = iconIndex
+                                vorhaben.icon = icon
                             }
                             dismiss()
                         } label: {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .fill(vorhaben.icon == iconIndex ? vorhaben.viewColor.opacity(0.2) : Color(.systemGray6))
+                                    .fill(vorhaben.icon == icon ? vorhaben.viewColor.opacity(0.2) : Color(.systemGray6))
                                     .overlay {
                                         RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                            .stroke(vorhaben.icon == iconIndex ? vorhaben.viewColor : .clear, lineWidth: 2)
+                                            .stroke(vorhaben.icon == icon ? vorhaben.viewColor : .clear, lineWidth: 2)
                                     }
-                                
-                                Image(systemName: VorhabenIcons[iconIndex] ?? "circle")
+
+                                Image(systemName: icon)
                                     .font(.title2)
-                                    .foregroundStyle(vorhaben.icon == iconIndex ? vorhaben.viewColor : .primary)
+                                    .foregroundStyle(vorhaben.icon == icon ? vorhaben.viewColor : .primary)
                             }
                             .frame(height: 60)
                         }
@@ -77,5 +75,6 @@ struct SymbolPickerView: View {
         FetchDescriptor<VorhabenModel>(predicate: #Predicate { vorhaben in
             vorhaben.bezeichnung == "iLifeDesign"
         }))
-    SymbolPickerView(vorhaben: Vorhabens[0] )
+    SymbolPickerView(vorhaben: Vorhabens[0])
+        .modelContainer(container)
 }

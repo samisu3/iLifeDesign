@@ -14,7 +14,11 @@
 		2841350A3003CF0600D0CCBB /* LebensbereicheView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 284135093003CF0600D0CCBB /* LebensbereicheView.swift */; };
 		2893EE632F6C586D004BDECD /* VorhabenEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2893EE622F6C586D004BDECD /* VorhabenEditor.swift */; };
 		2893EE792F6C8632004BDECD /* CompactVorhabenCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2893EE782F6C8632004BDECD /* CompactVorhabenCard.swift */; };
+		28B577C730134B8E00897743 /* QuickIdeaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B577C630134B8E00897743 /* QuickIdeaView.swift */; };
+		28B577C930134BAF00897743 /* LogbuchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B577C830134BAF00897743 /* LogbuchView.swift */; };
+		28B577CB30134BD100897743 /* ErinnerungenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B577CA30134BD100897743 /* ErinnerungenView.swift */; };
 		28C60DAE3003E444007E1E8C /* PhaseReflexionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28C60DAD3003E444007E1E8C /* PhaseReflexionModel.swift */; };
+		28E5EE1C300429F600513A73 /* StatistikView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28E5EE1B300429F600513A73 /* StatistikView.swift */; };
 		28EBE16F3003D6CC00CF6C6F /* PhaseModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28EBE16E3003D6CC00CF6C6F /* PhaseModel.swift */; };
 		28EBE1713003D6E500CF6C6F /* PhaseEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28EBE1703003D6E500CF6C6F /* PhaseEditor.swift */; };
 		28EBE1773003DAA700CF6C6F /* PhasenListeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28EBE1763003DAA700CF6C6F /* PhasenListeView.swift */; };
@@ -22,8 +26,6 @@
 		B64791262CB2DE5900F60F9A /* SymbolPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64791252CB2DE5900F60F9A /* SymbolPickerView.swift */; };
 		B6A5362B2C1815C10033C0D4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B6A5362A2C1815C10033C0D4 /* Assets.xcassets */; };
 		B6A5362E2C1815C10033C0D4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B6A5362D2C1815C10033C0D4 /* Preview Assets.xcassets */; };
-		B6FBAE932C1F51BE00DB5785 /* VorhabenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FBAE922C1F51BE00DB5785 /* VorhabenView.swift */; };
-		B6FBAE952C1F51C800DB5785 /* VorhabenListeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FBAE942C1F51C800DB5785 /* VorhabenListeView.swift */; };
 		B6FBAE9D2C1F52C700DB5785 /* AufgabeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FBAE9C2C1F52C700DB5785 /* AufgabeModel.swift */; };
 		B6FBAEA02C1F52EE00DB5785 /* VorhabenModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FBAE9F2C1F52EE00DB5785 /* VorhabenModel.swift */; };
 /* End PBXBuildFile section */
@@ -35,7 +37,11 @@
 		284135093003CF0600D0CCBB /* LebensbereicheView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LebensbereicheView.swift; sourceTree = "<group>"; };
 		2893EE622F6C586D004BDECD /* VorhabenEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VorhabenEditor.swift; sourceTree = "<group>"; };
 		2893EE782F6C8632004BDECD /* CompactVorhabenCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompactVorhabenCard.swift; sourceTree = "<group>"; };
+		28B577C630134B8E00897743 /* QuickIdeaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickIdeaView.swift; sourceTree = "<group>"; };
+		28B577C830134BAF00897743 /* LogbuchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogbuchView.swift; sourceTree = "<group>"; };
+		28B577CA30134BD100897743 /* ErinnerungenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErinnerungenView.swift; sourceTree = "<group>"; };
 		28C60DAD3003E444007E1E8C /* PhaseReflexionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseReflexionModel.swift; sourceTree = "<group>"; };
+		28E5EE1B300429F600513A73 /* StatistikView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatistikView.swift; sourceTree = "<group>"; };
 		28E945313003F7B9007BF2BF /* AufgabenListeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AufgabenListeView.swift; sourceTree = "<group>"; };
 		28EBE16E3003D6CC00CF6C6F /* PhaseModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseModel.swift; sourceTree = "<group>"; };
 		28EBE1703003D6E500CF6C6F /* PhaseEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseEditor.swift; sourceTree = "<group>"; };
@@ -47,8 +53,6 @@
 		B6A536232C1815C00033C0D4 /* iLifeDesign.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iLifeDesign.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B6A5362A2C1815C10033C0D4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B6A5362D2C1815C10033C0D4 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		B6FBAE922C1F51BE00DB5785 /* VorhabenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VorhabenView.swift; sourceTree = "<group>"; };
-		B6FBAE942C1F51C800DB5785 /* VorhabenListeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VorhabenListeView.swift; sourceTree = "<group>"; };
 		B6FBAE9C2C1F52C700DB5785 /* AufgabeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AufgabeModel.swift; sourceTree = "<group>"; };
 		B6FBAE9F2C1F52EE00DB5785 /* VorhabenModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VorhabenModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -123,11 +127,13 @@
 				284135073003CF0100D0CCBB /* LebensbereichEditor.swift */,
 				28EBE1763003DAA700CF6C6F /* PhasenListeView.swift */,
 				B64791252CB2DE5900F60F9A /* SymbolPickerView.swift */,
-				B6FBAE942C1F51C800DB5785 /* VorhabenListeView.swift */,
 				2893EE622F6C586D004BDECD /* VorhabenEditor.swift */,
-				B6FBAE922C1F51BE00DB5785 /* VorhabenView.swift */,
 				28EBE1703003D6E500CF6C6F /* PhaseEditor.swift */,
 				28EBE1783003DB2A00CF6C6F /* iLifeDesignApp.swift */,
+				28E5EE1B300429F600513A73 /* StatistikView.swift */,
+				28B577C630134B8E00897743 /* QuickIdeaView.swift */,
+				28B577C830134BAF00897743 /* LogbuchView.swift */,
+				28B577CA30134BD100897743 /* ErinnerungenView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -205,19 +211,21 @@
 				284135063003CEEC00D0CCBB /* LebensbereichModel.swift in Sources */,
 				280567E62FB74F36003CD1A9 /* DesignSystem.swift in Sources */,
 				B6FBAE9D2C1F52C700DB5785 /* AufgabeModel.swift in Sources */,
+				28B577CB30134BD100897743 /* ErinnerungenView.swift in Sources */,
 				B64791262CB2DE5900F60F9A /* SymbolPickerView.swift in Sources */,
 				28EBE1713003D6E500CF6C6F /* PhaseEditor.swift in Sources */,
 				2841350A3003CF0600D0CCBB /* LebensbereicheView.swift in Sources */,
 				2893EE632F6C586D004BDECD /* VorhabenEditor.swift in Sources */,
+				28E5EE1C300429F600513A73 /* StatistikView.swift in Sources */,
 				2893EE792F6C8632004BDECD /* CompactVorhabenCard.swift in Sources */,
 				28C60DAE3003E444007E1E8C /* PhaseReflexionModel.swift in Sources */,
 				28EBE1793003DB2A00CF6C6F /* iLifeDesignApp.swift in Sources */,
 				284135083003CF0100D0CCBB /* LebensbereichEditor.swift in Sources */,
 				28EBE1773003DAA700CF6C6F /* PhasenListeView.swift in Sources */,
-				B6FBAE952C1F51C800DB5785 /* VorhabenListeView.swift in Sources */,
+				28B577C930134BAF00897743 /* LogbuchView.swift in Sources */,
 				B6FBAEA02C1F52EE00DB5785 /* VorhabenModel.swift in Sources */,
 				28EBE16F3003D6CC00CF6C6F /* PhaseModel.swift in Sources */,
-				B6FBAE932C1F51BE00DB5785 /* VorhabenView.swift in Sources */,
+				28B577C730134B8E00897743 /* QuickIdeaView.swift in Sources */,
 				28324EEE3003F900002D21CC /* AufgabenListeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

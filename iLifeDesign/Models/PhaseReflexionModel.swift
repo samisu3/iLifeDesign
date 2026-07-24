@@ -13,7 +13,7 @@ import SwiftUI
 
 @Model
 class PhaseReflexionModel {
-    /// Phasennummer 0–9, entspricht VorhabenModel.phase
+    /// Phasennummer 0–4, entspricht VorhabenModel.phase
     var phase: Int = 0
     /// Name der Phase zum Zeitpunkt der Speicherung (z.B. "Empathie")
     var phaseName: String = ""

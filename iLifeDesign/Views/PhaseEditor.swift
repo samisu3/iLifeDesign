@@ -40,7 +40,7 @@ struct PhaseEditor: View {
                             Text(phase.info.isEmpty ? "Beschreibung" : phase.info)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                            Text("Phase \(phase.sort + 1) von 10")
+                            Text("Phase \(phase.sort + 1) von \(PhaseDefaults.count)")
                                 .font(.caption2)
                                 .foregroundStyle(phase.viewFarbe.opacity(0.8))
                         }

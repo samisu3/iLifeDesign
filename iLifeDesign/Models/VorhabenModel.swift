@@ -11,128 +11,41 @@ import SwiftUI
 import UIKit
 
 
-let VorhabenIcons: [Int: String] =
-[ 0: "pencil",
-  1: "phone",
-  2: "house",
-  3: "bicycle",
-  4: "car",
-  5: "sailboat",
-  6: "sun.max",
-  7: "snow",
-  8: "paperplane",
-  9: "figure.walk",
-  10: "bell",
-  11: "magnifyingglass",
-  12: "bubble",
-  13: "camera",
-  14: "birthday.cake",
-  15: "scooter",
-  16: "gamecontroller",
-  17: "airplane",
-  18: "figure.2.arms.open",
-  19: "figure.badminton",
-  20: "heart",
-  21: "star",
-  22: "book",
-  23: "iphone",
-  24: "briefcase",
-  25: "tree.fill",
-  26: "key",
-  27: "figure.dance",
-  28: "map",
-  29: "binoculars",
-  30: "theatermasks.fill",
-  31: "ladybug.fill",
-  32: "books.vertical.fill",
-  33: "moon.zzz.fill",
-  34: "umbrella.fill",
-  35: "paintbrush.pointed.fill",
-  36: "leaf.fill",
-  37: "clock.fill",
-  38: "gift.fill",
-  39: "graduationcap.fill",
-  40: "heart.rectangle.fill",
-  41: "phone.bubble.left.fill",
-  42: "cloud.rain.fill",
-  43: "building.columns.fill",
-  44: "person.3.fill",
-  45: "bell.fill",
-  46: "hammer.fill",
-  47: "star.fill",
-  48: "crown.fill",
-  49: "briefcase.fill",
-  50: "speaker.wave.3.fill",
-  51: "tshirt.fill",
-  52: "exclamationmark.triangle.fill",
-  53: "pawprint.fill",
-  54: "heart.slash.fill",
-  55: "infinity.circle.fill",
-  56: "dice.fill",
-  57: "heart.fill",
-  58: "map.fill",
-  59: "figure.wave",
-  60: "mappin.and.ellipse",
-  61: "facemask.fill",
-  62: "smoke.fill",
-  63: "eye.fill",
-  64: "person.wave.2.fill",
-  65: "mouth.fill",
-  66: "trash.fill",
-  67: "eyebrow",
-  68: "shift.fill",
-  69: "sun.max.fill",
-  70: "lungs.fill",
-  71: "hand.raised.fill",
-  72: "ear.fill",
-  73: "hand.thumbsup.fill",
-  74: "hand.thumbsdown.fill",
-  75: "hands.clap.fill",
-  76: "hands.sparkles.fill",
-  77: "flame.fill",
-  78: "bolt.fill",
-  79: "drop.fill",
-  80: "hare.fill",
-  81: "tortoise.fill",
-  82: "ant.fill",
-  83: "arrow.triangle.swap"
+// MARK: - Verfügbare Icons für Vorhaben (SF-Symbol-Namen, wie bei Phasen & Lebensbereichen)
+let VorhabenVerfügbareIcons: [String] = [
+    // Alltag & Zuhause
+    "target", "house", "sofa.fill", "hammer.fill", "key", "tshirt.fill", "clock.fill",
+    // Bewegung & Gesundheit
+    "figure.walk", "figure.dance", "figure.badminton", "bicycle", "lungs.fill", "moon.zzz.fill", "heart", "heart.fill",
+    // Reisen & Natur
+    "airplane", "car", "sailboat", "map", "mappin.and.ellipse", "binoculars",
+    "tree.fill", "leaf.fill", "sun.max", "snow", "umbrella.fill", "pawprint.fill",
+    // Freizeit & Kreativität
+    "gamecontroller", "camera", "paintbrush.pointed.fill", "theatermasks.fill", "dice.fill",
+    "book", "books.vertical.fill",
+    // Arbeit & Lernen
+    "briefcase", "graduationcap.fill", "building.columns.fill", "pencil", "iphone",
+    "magnifyingglass", "paperplane",
+    // Menschen & Feiern
+    "person.3.fill", "figure.2.arms.open", "person.wave.2.fill", "birthday.cake", "gift.fill",
+    "bubble", "phone",
+    // Symbole & Energie
+    "star", "star.fill", "crown.fill", "flame.fill", "bolt.fill", "drop.fill", "bell",
 ]
 
-let VorhabenPhase: [Int: String] =
-[ 0: "Idee",
-  1: "Emphathie",
-  2: "Fokus",
-  3: "Inspiration",
-  4: "Überwindung",
-  5: "Prototyping",
-  6: "Feedback",
-  7: "Lernen",
-  8: "Kontinuität"
-]
+// Legacy-Dictionaries — Fallback, wenn kein PhaseModel geladen ist.
+// Werden direkt aus den PhaseDefaults abgeleitet, damit es nur eine Quelle gibt.
+let VorhabenPhase: [Int: String] = Dictionary(
+    uniqueKeysWithValues: PhaseDefaults.map { ($0.sort, $0.name) }
+)
 
-let VorhabenPhaseIcon: [Int: String] =
-[ 0: "pencil",
-  1: "heart",
-  2: "magnifyingglass",
-  3: "lightbulb.max",
-  4: "sunrise",
-  5: "play",
-  6: "ear",
-  7: "book",
-  8: "party.popper"
-]
+let VorhabenPhaseIcon: [Int: String] = Dictionary(
+    uniqueKeysWithValues: PhaseDefaults.map { ($0.sort, $0.icon) }
+)
 
-let VorhabenPhaseInfo: [Int: String] =
-[ 0: "Idee aufnehmen",
-  1: "Wie fühlt es sich an?",
-  2: "Was ist der Kern des Themas?",
-  3: "Lösungsideen sammeln",
-  4: "Einstieg einfach gestalten",
-  5: "Erste Version ausprobieren",
-  6: "Rückmeldungen sammeln.",
-  7: "Was hast Du gelernt?",
-  8: "Neuen Versuch starten."
-]
+let VorhabenPhaseInfo: [Int: String] = Dictionary(
+    uniqueKeysWithValues: PhaseDefaults.map { ($0.sort, $0.info) }
+)
 
 /// Gibt die Default-Farbe einer Phase anhand ihrer Sortiernummer zurück.
 /// Wird als Fallback genutzt, solange kein `PhaseModel` aus der Datenbank geladen ist.
@@ -155,48 +68,27 @@ let Vorhabenpriority: [Int: String] =
     4: "★★★★★"
 ]
 
-let Lebensbereiche: [Int: String] =
-[ 0: "Gesundheit",
-  1: "Soziales",
-  2: "Sicherheit",
-  3: "Arbeit",
-  4: "Partnerschaft",
-  5: "Wohnen",
-  6: "Entwicklung",
-  7: "Hobby",
-  8: "Spiritualität",
-]
+// Legacy-Dictionaries — Fallback, wenn keine LebensbereichModel-Referenz gesetzt ist.
+// Werden direkt aus den LebensbereichDefaults abgeleitet, damit es nur eine Quelle gibt.
+let Lebensbereiche: [Int: String] = Dictionary(
+    uniqueKeysWithValues: LebensbereichDefaults.map { ($0.sort, $0.name) }
+)
 
-let LebensbereicheIcon: [Int: String] =
-[ 0: "cross.fill",                    // Gesundheit
-  1: "person.2.fill",                 // Soziales
-  2: "shield.fill",                   // Sicherheit
-  3: "briefcase.fill",                // Arbeit
-  4: "heart.fill",                    // Partnerschaft
-  5: "house.fill",                    // Wohnen
-  6: "graduationcap.fill",            // Entwicklung
-  7: "gamecontroller.fill",           // Hobby
-  8: "leaf.fill",                     // Spiritualität
-]
+let LebensbereicheIcon: [Int: String] = Dictionary(
+    uniqueKeysWithValues: LebensbereichDefaults.map { ($0.sort, $0.icon) }
+)
 
-let LebensbereicheColor: [Int: Color] =
-[ 0: Color.green,
-  1: Color.orange,
-  2: Color.blue,
-  3: Color.mint,
-  4: Color.red,
-  5: Color.brown,
-  6: Color.cyan,
-  7: Color.teal,
-  8: Color.purple,
-]
+let LebensbereicheColor: [Int: Color] = Dictionary(
+    uniqueKeysWithValues: LebensbereichDefaults.map { ($0.sort, Color.fromLebensbereichID($0.farbeID)) }
+)
 
 
 
 @Model
 class VorhabenModel {
     var bezeichnung: String = ""
-    var icon: Int = 0
+    /// SF-Symbol-Name des Icons
+    var icon: String = "target"
     var phase: Int = 0
     var priority: Int = 0
     var beschreibung: String = ""
@@ -211,7 +103,7 @@ class VorhabenModel {
     @Relationship(deleteRule: .cascade, inverse: \PhaseReflexionModel.vorhaben)
     var reflexionen: [PhaseReflexionModel]? = []
     
-    init(bezeichnung: String = "", icon: Int = 0, phase: Int = 0, priority: Int = 1, beschreibung: String = "", lebensbereich: Int = 0, lebensbereichRef: LebensbereichModel? = nil, aufgaben: [AufgabeModel] = []) {
+    init(bezeichnung: String = "", icon: String = "target", phase: Int = 0, priority: Int = 1, beschreibung: String = "", lebensbereich: Int = 0, lebensbereichRef: LebensbereichModel? = nil, aufgaben: [AufgabeModel] = []) {
         self.bezeichnung = bezeichnung
         self.icon = icon
         self.phase = phase
@@ -261,8 +153,7 @@ extension VorhabenModel {
     }
     
     var viewIcon: String {
-        guard let theIcon = VorhabenIcons[icon] else {return "" }
-        return theIcon
+        icon.isEmpty ? "target" : icon
     }
     
     /// Fallback-Farbe basierend auf den Default-Phasenfarben.
@@ -314,12 +205,13 @@ extension VorhabenModel {
     static var preview: ModelContainer {
         do {
             let container = try ModelContainer(
-                for: VorhabenModel.self, LebensbereichModel.self,
+                for: VorhabenModel.self, LebensbereichModel.self, PhaseModel.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
 
-            // Standard-Lebensbereiche anlegen
+            // Standard-Lebensbereiche und -Phasen anlegen
             setupStandardLebensbereiche(context: container.mainContext)
+            setupStandardPhasen(context: container.mainContext)
 
             let fetch = FetchDescriptor<LebensbereichModel>(sortBy: [SortDescriptor(\.sort)])
             let bereiche = (try? container.mainContext.fetch(fetch)) ?? []
@@ -329,38 +221,38 @@ extension VorhabenModel {
             }
 
             // Vorhabene
-            let iLifeDesign = VorhabenModel(bezeichnung: "iLifeDesign", icon: 23, phase: 2, priority: 0, beschreibung: "Das iLifeDesign Tool machen", lebensbereich: 7, lebensbereichRef: bereich(7))
+            let iLifeDesign = VorhabenModel(bezeichnung: "iLifeDesign", icon: "iphone", phase: 2, priority: 0, beschreibung: "Das iLifeDesign Tool machen", lebensbereich: 2, lebensbereichRef: bereich(2))
             container.mainContext.insert(iLifeDesign)
             addStandardAufgaben(vorhaben: iLifeDesign)
 
-            let balkonEinrichten = VorhabenModel(bezeichnung: "Balkon Einrichten", icon: 2, phase: 1, priority: 1, beschreibung: "Den Balkon neu einrichten", lebensbereich: 5, lebensbereichRef: bereich(5))
+            let balkonEinrichten = VorhabenModel(bezeichnung: "Balkon Einrichten", icon: "house", phase: 1, priority: 1, beschreibung: "Den Balkon neu einrichten", lebensbereich: 4, lebensbereichRef: bereich(4))
             container.mainContext.insert(balkonEinrichten)
             addStandardAufgaben(vorhaben: balkonEinrichten)
 
-            let neuJob = VorhabenModel(bezeichnung: "Neuen Job suchen", icon: 24, phase: 0, priority: 2, beschreibung: "Neuen (guten) Job suchen", lebensbereich: 3, lebensbereichRef: bereich(3))
+            let neuJob = VorhabenModel(bezeichnung: "Neuen Job suchen", icon: "briefcase", phase: 0, priority: 2, beschreibung: "Neuen (guten) Job suchen", lebensbereich: 1, lebensbereichRef: bereich(1))
             container.mainContext.insert(neuJob)
             addStandardAufgaben(vorhaben: neuJob)
 
-            let buchSchreiben = VorhabenModel(bezeichnung: "Buch Schreiben", icon: 22, phase: 4, priority: 3, beschreibung: "Buch über mein Leben schreiben", lebensbereich: 3, lebensbereichRef: bereich(3))
+            let buchSchreiben = VorhabenModel(bezeichnung: "Buch Schreiben", icon: "book", phase: 4, priority: 3, beschreibung: "Buch über mein Leben schreiben", lebensbereich: 1, lebensbereichRef: bereich(1))
             container.mainContext.insert(buchSchreiben)
             addStandardAufgaben(vorhaben: buchSchreiben)
 
-            let weltReise = VorhabenModel(bezeichnung: "Weltreise", icon: 5, phase: 6, priority: 4, beschreibung: "Um die Welt in 80 Tagen", lebensbereich: 7, lebensbereichRef: bereich(7))
+            let weltReise = VorhabenModel(bezeichnung: "Weltreise", icon: "sailboat", phase: 3, priority: 4, beschreibung: "Um die Welt in 80 Tagen", lebensbereich: 2, lebensbereichRef: bereich(2))
             container.mainContext.insert(weltReise)
             addStandardAufgaben(vorhaben: weltReise)
 
-            let gartenPflegen = VorhabenModel(bezeichnung: "Garten pflegen", icon: 24, phase: 5, priority: 0, beschreibung: "Neue Wege anlegen", lebensbereich: 5, lebensbereichRef: bereich(5))
+            let gartenPflegen = VorhabenModel(bezeichnung: "Garten pflegen", icon: "tree.fill", phase: 2, priority: 0, beschreibung: "Neue Wege anlegen", lebensbereich: 4, lebensbereichRef: bereich(4))
             container.mainContext.insert(gartenPflegen)
             addStandardAufgaben(vorhaben: gartenPflegen)
 
-            let weiterBildung = VorhabenModel(bezeichnung: "Weiterbildung", icon: 29, phase: 3, priority: 1, beschreibung: "Bachelor in Software Entwicklung", lebensbereich: 6, lebensbereichRef: bereich(6))
+            let weiterBildung = VorhabenModel(bezeichnung: "Weiterbildung", icon: "graduationcap.fill", phase: 1, priority: 1, beschreibung: "Bachelor in Software Entwicklung", lebensbereich: 0, lebensbereichRef: bereich(0))
             container.mainContext.insert(weiterBildung)
             addStandardAufgaben(vorhaben: weiterBildung)
 
             return container
         } catch {
             return try! ModelContainer(
-                for: VorhabenModel.self, LebensbereichModel.self,
+                for: VorhabenModel.self, LebensbereichModel.self, PhaseModel.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
         }
@@ -373,7 +265,7 @@ extension VorhabenModel {
         @MainActor
         static let preview2 = VorhabenModel(
             bezeichnung: "Test-Ziel",
-            icon: 2,
+            icon: "house",
             phase: 2,
             priority: 3,
             beschreibung: "Vorschauinhalt",

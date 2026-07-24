@@ -12,7 +12,7 @@ import SwiftUI
 // MARK: - Verfügbare Icons für Lebensbereiche
 let LebensbereichVerfügbareIcons: [String] = [
     // Menschen & Körper
-    "cross.fill", "heart.fill", "figure.walk", "person.2.fill", "figure.2.arms.open",
+    "bolt.heart.fill", "cross.fill", "heart.fill", "figure.walk", "person.2.fill", "figure.2.arms.open",
     "person.3.fill", "person.wave.2.fill", "figure.dance", "lungs.fill", "brain.fill",
     // Zuhause & Sicherheit
     "house.fill", "shield.fill", "lock.fill", "key.fill", "hammer.fill",
@@ -70,7 +70,10 @@ extension Color {
     }
 }
 
-// MARK: - Default-Daten für Lebensbereiche
+// MARK: - Default-Daten: Die 5 Lebens-Dimensionen
+// Weiterentwicklung des Life-Design-Modells (Work, Play, Love, Health)
+// ergänzt um den Faktor Rahmen/Fundament (Umfeld).
+// Die Beschreibung ist die Leitfrage der jeweiligen Dimension.
 
 struct LebensbereichDefault {
     let sort: Int
@@ -78,19 +81,14 @@ struct LebensbereichDefault {
     let beschreibung: String
     let icon: String
     let farbeID: String
-    let prioritaet: Int
 }
 
 let LebensbereichDefaults: [LebensbereichDefault] = [
-    LebensbereichDefault(sort: 0, name: "Gesundheit",     beschreibung: "Körper, Geist und Wohlbefinden", icon: "cross.fill",            farbeID: "green",  prioritaet: 3),
-    LebensbereichDefault(sort: 1, name: "Soziales",       beschreibung: "Freunde, Familie und Netzwerk",  icon: "person.2.fill",         farbeID: "orange", prioritaet: 3),
-    LebensbereichDefault(sort: 2, name: "Sicherheit",     beschreibung: "Finanzen, Schutz und Stabilität",icon: "shield.fill",           farbeID: "blue",   prioritaet: 3),
-    LebensbereichDefault(sort: 3, name: "Arbeit",         beschreibung: "Beruf, Karriere und Leistung",   icon: "briefcase.fill",        farbeID: "mint",   prioritaet: 3),
-    LebensbereichDefault(sort: 4, name: "Partnerschaft",  beschreibung: "Liebe, Beziehung und Intimität", icon: "heart.fill",            farbeID: "red",    prioritaet: 3),
-    LebensbereichDefault(sort: 5, name: "Wohnen",         beschreibung: "Zuhause, Umgebung und Raum",     icon: "house.fill",            farbeID: "brown",  prioritaet: 3),
-    LebensbereichDefault(sort: 6, name: "Entwicklung",    beschreibung: "Lernen, Wachstum und Bildung",   icon: "graduationcap.fill",    farbeID: "cyan",   prioritaet: 3),
-    LebensbereichDefault(sort: 7, name: "Hobby",          beschreibung: "Freizeit, Spass und Kreativität",icon: "gamecontroller.fill",   farbeID: "teal",   prioritaet: 3),
-    LebensbereichDefault(sort: 8, name: "Spiritualität",  beschreibung: "Sinn, Werte und innere Stärke",  icon: "leaf.fill",             farbeID: "purple", prioritaet: 3),
+    LebensbereichDefault(sort: 0, name: "Vitalität",    beschreibung: "Wie stark ist mein innerer Akku geladen?",              icon: "bolt.heart.fill", farbeID: "green"),
+    LebensbereichDefault(sort: 1, name: "Wirkung",      beschreibung: "Wo bringe ich meine Stärken ein und bewirke etwas?",    icon: "briefcase.fill",  farbeID: "blue"),
+    LebensbereichDefault(sort: 2, name: "Experimente",  beschreibung: "Wo probiere ich mich zweckfrei aus und lerne Neues?",   icon: "sparkles",        farbeID: "orange"),
+    LebensbereichDefault(sort: 3, name: "Verbindung",   beschreibung: "Welche Beziehungen schenken mir Kraft und Halt?",       icon: "person.2.fill",   farbeID: "pink"),
+    LebensbereichDefault(sort: 4, name: "Umfeld",       beschreibung: "Gibt mir mein Umfeld Freiheit, Stabilität und Sicherheit?", icon: "house.fill",  farbeID: "teal"),
 ]
 
 // MARK: - SwiftData Model
@@ -101,9 +99,10 @@ class LebensbereichModel {
     var beschreibung: String = ""
     var icon: String = "circle.fill"
     var farbeID: String = "blue"
-    var prioritaet: Int = 3
     var sort: Int = 0
     var istAktiv: Bool = true
+    /// Selbsteinschätzung 1–10: Wie zufrieden bin ich aktuell in dieser Dimension?
+    var einschaetzung: Int = 5
 
     var vorhaben: [VorhabenModel]? = []
 
@@ -112,17 +111,17 @@ class LebensbereichModel {
         beschreibung: String = "",
         icon: String = "circle.fill",
         farbeID: String = "blue",
-        prioritaet: Int = 3,
         sort: Int = 0,
-        istAktiv: Bool = true
+        istAktiv: Bool = true,
+        einschaetzung: Int = 5
     ) {
         self.name = name
         self.beschreibung = beschreibung
         self.icon = icon
         self.farbeID = farbeID
-        self.prioritaet = prioritaet
         self.sort = sort
         self.istAktiv = istAktiv
+        self.einschaetzung = einschaetzung
     }
 }
 
@@ -132,10 +131,6 @@ extension LebensbereichModel {
 
     var viewFarbe: Color {
         Color.fromLebensbereichID(farbeID)
-    }
-
-    var viewPrioritätSterne: String {
-        String(repeating: "★", count: prioritaet) + String(repeating: "☆", count: 5 - prioritaet)
     }
 
     var viewVorhabenAnzahl: Int {
@@ -159,7 +154,6 @@ func setupStandardLebensbereiche(context: ModelContext) {
             beschreibung: default_.beschreibung,
             icon: default_.icon,
             farbeID: default_.farbeID,
-            prioritaet: default_.prioritaet,
             sort: default_.sort
         )
         context.insert(bereich)

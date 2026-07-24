@@ -22,7 +22,7 @@ struct iLifeDesignApp: App {
         ])
 
         // Aktuelle Schema-Version als String (bei jedem inkompatiblen Umbau erhöhen)
-        let currentSchemaVersion = "v10"
+        let currentSchemaVersion = "v12"
         let schemaVersionKey = "swiftdata_schema_version"
 
         if UserDefaults.standard.string(forKey: schemaVersionKey) != currentSchemaVersion {
@@ -56,12 +56,14 @@ struct AppRootView: View {
 
     var body: some View {
         TabView {
-            VorhabenListeView()
-                .tabItem { Label("Liste", systemImage: "list.dash") }
             PhasenListeView()
                 .tabItem { Label("Phasen", systemImage: "infinity") }
             LebensbereicheView()
                 .tabItem { Label("Lebensbereiche", systemImage: "circle.hexagonpath") }
+            LogbuchView()
+                .tabItem { Label("Logbuch", systemImage: "trophy") }
+            StatistikView()
+                .tabItem { Label("Statistik", systemImage: "chart.bar.fill") }
         }
         .onAppear {
             // Standard-Daten genau einmal beim ersten Start anlegen.

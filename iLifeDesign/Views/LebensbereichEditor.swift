@@ -42,7 +42,7 @@ struct LebensbereichEditor: View {
                             Text(bereich.beschreibung.isEmpty ? "Beschreibung" : bereich.beschreibung)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                            Text(bereich.viewPrioritätSterne)
+                            Text("Einschätzung \(bereich.einschaetzung) / 10")
                                 .font(.caption)
                                 .foregroundStyle(bereich.viewFarbe)
                         }
@@ -59,34 +59,32 @@ struct LebensbereichEditor: View {
                         .lineLimit(2...4)
                 }
 
-                // MARK: Priorität
+                // MARK: Selbsteinschätzung
                 Section {
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
-                            Text("Priorität")
+                            Text("Aktueller Stand")
                             Spacer()
-                            Text(bereich.viewPrioritätSterne)
-                                .foregroundStyle(bereich.viewFarbe)
+                            Text("\(bereich.einschaetzung) / 10")
                                 .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(bereich.viewFarbe)
                         }
-                        HStack(spacing: 12) {
-                            ForEach(1...5, id: \.self) { wert in
-                                Button {
-                                    bereich.prioritaet = wert
-                                } label: {
-                                    Image(systemName: wert <= bereich.prioritaet ? "star.fill" : "star")
-                                        .font(.title2)
-                                        .foregroundStyle(wert <= bereich.prioritaet ? bereich.viewFarbe : .secondary)
-                                }
-                                .buttonStyle(.plain)
-                                .frame(maxWidth: .infinity)
-                            }
-                        }
-                        .padding(.top, 2)
+                        Slider(
+                            value: Binding(
+                                get: { Double(bereich.einschaetzung) },
+                                set: { bereich.einschaetzung = Int($0.rounded()) }
+                            ),
+                            in: 1...10,
+                            step: 1
+                        )
+                        .tint(bereich.viewFarbe)
                     }
                     .padding(.vertical, 4)
                 } header: {
-                    Text("Priorität")
+                    Text("Selbsteinschätzung")
+                } footer: {
+                    Text("Wie zufrieden bist Du aktuell in dieser Dimension? Die Werte bilden das Netzdiagramm im Balance-Check der Statistik.")
                 }
 
                 // MARK: Icon
@@ -231,11 +229,11 @@ struct LebensbereichIconPicker: View {
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
     )
     let bereich = LebensbereichModel(
-        name: "Gesundheit",
-        beschreibung: "Körper, Geist und Wohlbefinden",
-        icon: "cross.fill",
+        name: "Vitalität",
+        beschreibung: "Wie stark ist mein innerer Akku geladen?",
+        icon: "bolt.heart.fill",
         farbeID: "green",
-        prioritaet: 4
+        einschaetzung: 7
     )
     container.mainContext.insert(bereich)
     return LebensbereichEditor(bereich: bereich)

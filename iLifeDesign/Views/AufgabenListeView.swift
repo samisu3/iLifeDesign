@@ -17,6 +17,9 @@ struct AufgabenListeView: View {
     @State private var i: Int
     // Fokus zentral hier verwaltet — welcher Index soll fokussiert sein
     @FocusState private var fokusIndex: Int?
+    // Belohnung beim Phasenabschluss (Konfetti + Entdecker-Botschaft)
+    @State private var zeigeKonfetti = false
+    @State private var erfolgsBotschaft = ""
 
     private var fragen: [AufgabeModel] { vorhaben.viewAktuelleAufgaben }
     private var abschlussfrage: AufgabeModel? { fragen.last(where: { $0.istAbschlussfrage }) }
@@ -95,7 +98,29 @@ struct AufgabenListeView: View {
                         }
                     }
                 }
+
+                // Belohnung: Konfetti + Entdecker-Botschaft beim Phasenabschluss
+                if zeigeKonfetti {
+                    KonfettiView()
+                    VStack {
+                        Text(erfolgsBotschaft)
+                            .font(.subheadline.bold())
+                            .foregroundStyle(.white)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 18)
+                            .padding(.vertical, 10)
+                            .background { Capsule().fill(vorhaben.viewColor) }
+                            .shadow(color: vorhaben.viewColor.opacity(0.35), radius: 8, y: 4)
+                            .padding(.top, 8)
+                        Spacer()
+                    }
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .allowsHitTesting(false)
+                }
             }
+            // Haptik: leichter Impuls pro beantworteter Frage, Erfolg beim Phasenwechsel
+            .sensoryFeedback(.impact(weight: .light), trigger: i)
+            .sensoryFeedback(.success, trigger: vorhaben.phase)
             .navigationTitle(vorhaben.viewPhase)
             .modernNavigation()
             .toolbar {
@@ -193,7 +218,24 @@ struct AufgabenListeView: View {
         modelContext.insert(reflexion)
 
         withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-            vorhaben.phase += 1
+            if vorhaben.phase >= PhaseDefaults.count - 1 {
+                // Next Loop: Nach dem Schub startet der Kreislauf neu beim Kompass.
+                // Die Antworten werden geleert — die Kernaussagen bleiben im Verlauf erhalten.
+                for aufgabe in vorhaben.aufgaben ?? [] {
+                    aufgabe.antwort = ""
+                    aufgabe.erledigt = false
+                }
+                vorhaben.phase = 0
+            } else {
+                vorhaben.phase += 1
+            }
+        }
+
+        // Belohnung anzeigen und nach kurzer Zeit wieder ausblenden
+        erfolgsBotschaft = EntdeckerBotschaften.randomElement() ?? ""
+        withAnimation(.spring(response: 0.4)) { zeigeKonfetti = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {
+            withAnimation(.easeOut(duration: 0.4)) { zeigeKonfetti = false }
         }
     }
 }

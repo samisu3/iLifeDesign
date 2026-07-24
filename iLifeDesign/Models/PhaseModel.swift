@@ -12,6 +12,8 @@ import SwiftUI
 // MARK: - Verfügbare Icons für Phasen
 
 let PhaseVerfügbareIcons: [String] = [
+    // Kompass & Loop
+    "safari", "safari.fill", "map.fill", "figure.run", "arrow.triangle.2.circlepath",
     // Prozess & Idee
     "pencil", "lightbulb.max", "lightbulb.fill", "brain.fill", "sparkles",
     // Herz & Empathie
@@ -62,7 +64,8 @@ extension Color {
     }
 }
 
-// MARK: - Default-Daten
+// MARK: - Default-Daten: Der 5-Phasen-Expeditions-Loop
+// Schlankes, dynamisches Modell — nach der letzten Phase startet der Kreislauf neu.
 
 struct PhaseDefault {
     let sort: Int
@@ -73,22 +76,18 @@ struct PhaseDefault {
 }
 
 let PhaseDefaults: [PhaseDefault] = [
-    PhaseDefault(sort: 0, name: "Idee",        info: "Idee aufnehmen",                  icon: "pencil",           farbeID: "blue"),
-    PhaseDefault(sort: 1, name: "Empathie",    info: "Wie fühlt es sich an?",           icon: "heart",            farbeID: "pink"),
-    PhaseDefault(sort: 2, name: "Fokus",       info: "Was ist der Kern des Themas?",    icon: "magnifyingglass",  farbeID: "cyan"),
-    PhaseDefault(sort: 3, name: "Inspiration", info: "Lösungsideen sammeln",            icon: "lightbulb.max",    farbeID: "yellow"),
-    PhaseDefault(sort: 4, name: "Überwindung", info: "Einstieg einfach gestalten",      icon: "sunrise",          farbeID: "orange"),
-    PhaseDefault(sort: 5, name: "Prototyping", info: "Erste Version ausprobieren",      icon: "play",             farbeID: "green"),
-    PhaseDefault(sort: 6, name: "Feedback",    info: "Rückmeldungen sammeln.",          icon: "ear",              farbeID: "teal"),
-    PhaseDefault(sort: 7, name: "Lernen",      info: "Was hast Du gelernt?",            icon: "book",             farbeID: "indigo"),
-    PhaseDefault(sort: 8, name: "Kontinuität", info: "Neuen Versuch starten.",          icon: "party.popper",     farbeID: "purple"),
+    PhaseDefault(sort: 0, name: "Der Kompass",  info: "Standort bestimmen & Fokus schärfen",   icon: "safari",                       farbeID: "blue"),
+    PhaseDefault(sort: 1, name: "Der Entwurf",  info: "Ideen sammeln & Experiment planen",     icon: "lightbulb.max",                farbeID: "yellow"),
+    PhaseDefault(sort: 2, name: "Der Test Run", info: "Ausprobieren im echten Alltag",         icon: "figure.run",                   farbeID: "green"),
+    PhaseDefault(sort: 3, name: "Das Logbuch",  info: "Bilanz ziehen & Erkenntnisse sichern",  icon: "book",                         farbeID: "indigo"),
+    PhaseDefault(sort: 4, name: "Der Schub",    info: "Verankern & nächste Runde starten",     icon: "arrow.triangle.2.circlepath",  farbeID: "purple"),
 ]
 
 // MARK: - SwiftData Model
 
 @Model
 class PhaseModel {
-    /// Unveränderliche Nummer 0–9 — entspricht VorhabenModel.phase
+    /// Unveränderliche Nummer 0–4 — entspricht VorhabenModel.phase
     var sort: Int = 0
     var name: String = ""
     var info: String = ""
@@ -114,7 +113,7 @@ extension PhaseModel {
 
 // MARK: - Standard-Phasen anlegen
 
-/// Legt alle 10 Standard-Phasen in den ModelContext ein,
+/// Legt alle 5 Standard-Phasen in den ModelContext ein,
 /// falls noch keine vorhanden sind.
 @MainActor
 func setupStandardPhasen(context: ModelContext) {
@@ -134,7 +133,7 @@ func setupStandardPhasen(context: ModelContext) {
     }
 }
 
-/// Hilfsfunktion: Alle 10 Phasen geordnet laden
+/// Hilfsfunktion: Alle 5 Phasen geordnet laden
 @MainActor
 func fetchAllePhasen(context: ModelContext) -> [PhaseModel] {
     let fetch = FetchDescriptor<PhaseModel>(sortBy: [SortDescriptor(\.sort)])

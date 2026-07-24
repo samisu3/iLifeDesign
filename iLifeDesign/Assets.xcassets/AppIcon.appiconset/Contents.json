@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "ilifedesign_logo_weiss.jpg",
+      "filename" : "iLifeDesign.jpg",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,7 +13,6 @@
           "value" : "dark"
         }
       ],
-      "filename" : "ilifedesign_logo_weiss 1.jpg",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -25,7 +24,6 @@
           "value" : "tinted"
         }
       ],
-      "filename" : "ilifedesign_logo_weiss 2.jpg",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
