@@ -43,6 +43,7 @@ struct QuickIdeaView: View {
     @Environment(\.dismiss) private var dismiss
 
     @Query(sort: \LebensbereichModel.sort) private var lebensbereiche: [LebensbereichModel]
+    @Query(sort: \ErkenntnisModel.datum, order: .reverse) private var erkenntnisse: [ErkenntnisModel]
 
     @State private var ideeText = ""
     @State private var gewählteDimension: LebensbereichModel?
@@ -203,6 +204,26 @@ struct QuickIdeaView: View {
                         }
                         .buttonStyle(.plain)
                         .transition(.scale(scale: 0.95).combined(with: .opacity))
+                    }
+                }
+
+                // Erkenntnisse aus früheren Experimenten — Gelerntes fliesst
+                // in neue Ideen ein.
+                if !erkenntnisse.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "lightbulb.max.fill")
+                                .font(.caption.bold())
+                                .foregroundStyle(.yellow)
+                            Text("DEINE ERKENNTNISSE")
+                                .font(.caption.bold())
+                                .foregroundStyle(.secondary)
+                                .kerning(0.5)
+                        }
+
+                        ForEach(erkenntnisse.prefix(3)) { erkenntnis in
+                            ErkenntnisKarte(erkenntnis: erkenntnis)
+                        }
                     }
                 }
 

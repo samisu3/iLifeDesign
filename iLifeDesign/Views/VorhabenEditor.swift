@@ -61,7 +61,7 @@ struct VorhabenEditor: View {
                     TextField("Beschreibung", text: $vorhaben.beschreibung, axis: .vertical)
                         .lineLimit(2...6)
                 } header: {
-                    Text("Titel")
+                    Text("Vorhaben")
                 }
 
                 // ── Priorität & Lebensbereich ────────────────────────────
@@ -110,82 +110,93 @@ struct VorhabenEditor: View {
                 }
 
                 // ── Aktuelle Phase & Nächste Aktion ─────────────────────
+                // Eine zusammenhängende Karte: Phase oben, Aktion unten —
+                // gleichwertig, durch einen Divider getrennt.
                 Section {
-                    // Phasen-Picker
-                    Menu {
-                        ForEach(verfügbarePhasen) { phase in
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    vorhaben.phase = phase.sort
-                                }
-                            } label: {
-                                HStack {
-                                    Image(systemName: phase.icon)
-                                        .foregroundStyle(phase.viewFarbe)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(phase.name)
-                                            .fontWeight(.medium)
-                                        Text(phase.info)
-                                            .font(.caption)
-                                            .foregroundStyle(phase.viewFarbe)
+                    VStack(alignment: .leading, spacing: 0) {
+                        // Phasen-Picker
+                        Menu {
+                            ForEach(verfügbarePhasen) { phase in
+                                Button {
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        vorhaben.phase = phase.sort
                                     }
-                                    Spacer()
-                                    if vorhaben.phase == phase.sort {
-                                        Image(systemName: "checkmark")
+                                } label: {
+                                    HStack {
+                                        Image(systemName: phase.icon)
                                             .foregroundStyle(phase.viewFarbe)
-                                            .fontWeight(.semibold)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(phase.name)
+                                                .fontWeight(.medium)
+                                            Text(phase.info)
+                                                .font(.caption)
+                                                .foregroundStyle(phase.viewFarbe)
+                                        }
+                                        Spacer()
+                                        if vorhaben.phase == phase.sort {
+                                            Image(systemName: "checkmark")
+                                                .foregroundStyle(phase.viewFarbe)
+                                                .fontWeight(.semibold)
+                                        }
                                     }
                                 }
                             }
-                        }
-                    } label: {
-                        let aktuellePhase = verfügbarePhasen.first { $0.sort == vorhaben.phase }
-                        HStack(spacing: 10) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color(.systemGray5))
-                                    .frame(width: 28, height: 28)
-                                Image(systemName: aktuellePhase?.icon ?? vorhaben.viewPhaseIcon)
-                                    .font(.system(size: 13, weight: .medium))
-                                    .foregroundStyle(Color(.systemGray))
-                            }
-                            VStack(alignment: .leading, spacing: 1) {
-                                Text(aktuellePhase?.name ?? vorhaben.viewPhase)
-                                    .foregroundStyle(.primary)
-                                Text(aktuellePhase?.info ?? vorhaben.viewPhaseInfo)
-                                    .font(.caption)
+                        } label: {
+                            let aktuellePhase = verfügbarePhasen.first { $0.sort == vorhaben.phase }
+                            HStack(spacing: 10) {
+                                ZStack {
+                                    Circle()
+                                        .fill((aktuellePhase?.viewFarbe ?? .gray).opacity(0.15))
+                                        .frame(width: 28, height: 28)
+                                    Image(systemName: aktuellePhase?.icon ?? vorhaben.viewPhaseIcon)
+                                        .font(.system(size: 13, weight: .medium))
+                                        .foregroundStyle(aktuellePhase?.viewFarbe ?? .gray)
+                                }
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(aktuellePhase?.name ?? vorhaben.viewPhase)
+                                        .foregroundStyle(.primary)
+                                    Text(aktuellePhase?.info ?? vorhaben.viewPhaseInfo)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.caption2)
                                     .foregroundStyle(.secondary)
                             }
-                            Spacer()
+                            .contentShape(Rectangle())
                         }
-                        .contentShape(Rectangle())
-                    }
-                    .tint(.primary)
+                        .tint(.primary)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
 
-                    // Nächste Aktion – Zwischenzeile
-                    HStack {
-                        Text("Nächste Aktion")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                            .textCase(nil)
-                        Spacer()
-                        if vorhaben.viewAktuelleAufgabenAnzahl > 0 {
-                            Text("\(vorhaben.viewAktuelleAufgabenAnzahlErledigt)/\(vorhaben.viewAktuelleAufgabenAnzahl)")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
+                        Divider()
+                            .padding(.horizontal, 16)
+
+                        // Nächste Aktion — gleichwertig zur Phase
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("Nächste Aktion")
+                                    .font(.footnote.weight(.medium))
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                if vorhaben.viewAktuelleAufgabenAnzahl > 0 {
+                                    Text("\(vorhaben.viewAktuelleAufgabenAnzahlErledigt)/\(vorhaben.viewAktuelleAufgabenAnzahl)")
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                        .monospacedDigit()
+                                }
+                            }
+                            NächsteAktionButton(vorhaben: vorhaben) {
+                                zeigeAufgaben = true
+                            }
                         }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
                     }
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 0, trailing: 16))
-
-                    // Nächste Aktion – Button
-                    NächsteAktionButton(vorhaben: vorhaben) {
-                        zeigeAufgaben = true
-                    }
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                    .listRowInsets(EdgeInsets())
                 } header: {
-                    Text("Aktuelle Phase")
+                    Text("Aktuelle Phase & nächste Aktion")
                 }
 
                 // ── Verlauf ──────────────────────────────────────────────

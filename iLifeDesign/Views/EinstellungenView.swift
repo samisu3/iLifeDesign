@@ -1,10 +1,11 @@
 //
-//  ErinnerungenView.swift
+//  EinstellungenView.swift
 //  iLifeDesign
 //
-//  Smart Notifications nach Atomic Habits: keine generischen Erinnerungen,
-//  sondern neugierig machende Fragen zur passenden Uhrzeit — plus
-//  Habit Stacking (der Ideen-Moment wird an eine eigene Alltagsroutine geknüpft).
+//  Einstellungen: Intro-Anzeige und Smart Notifications nach Atomic Habits —
+//  keine generischen Erinnerungen, sondern neugierig machende Fragen zur
+//  passenden Uhrzeit, plus Habit Stacking (der Ideen-Moment wird an eine
+//  eigene Alltagsroutine geknüpft).
 //
 
 import SwiftUI
@@ -87,8 +88,11 @@ enum ErinnerungsPlaner {
 
 // MARK: - Einstellungs-Sheet
 
-struct ErinnerungenView: View {
+struct EinstellungenView: View {
     @Environment(\.dismiss) private var dismiss
+
+    @AppStorage("introBeimStart") private var introBeimStart = true
+    @State private var zeigeIntro = false
 
     @AppStorage("wochenImpulsAktiv") private var wochenImpulsAktiv = false
     @AppStorage("wochenImpulsZeit") private var wochenImpulsZeit = 18.0 * 3600
@@ -101,6 +105,22 @@ struct ErinnerungenView: View {
     var body: some View {
         NavigationStack {
             Form {
+                // MARK: Intro
+                Section {
+                    Toggle(isOn: $introBeimStart) {
+                        Label("Intro beim Start anzeigen", systemImage: "hand.wave")
+                    }
+                    Button {
+                        zeigeIntro = true
+                    } label: {
+                        Label("Intro jetzt ansehen", systemImage: "play.circle")
+                    }
+                } header: {
+                    Text("Intro")
+                } footer: {
+                    Text("Das Intro erklärt in vier Schritten, wie iLifeDesign funktioniert: Ideen sammeln und als kleine Experimente umsetzen.")
+                }
+
                 // MARK: Wochen-Impuls
                 Section {
                     Toggle(isOn: $wochenImpulsAktiv) {
@@ -152,12 +172,15 @@ struct ErinnerungenView: View {
                     Text("Knüpfe das Ideen-Festhalten an eine bestehende Routine: Wann denkst Du meistens über neue Ideen nach?")
                 }
             }
-            .navigationTitle("Erinnerungen")
+            .navigationTitle("Einstellungen")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Fertig") { dismiss() }
                 }
+            }
+            .fullScreenCover(isPresented: $zeigeIntro) {
+                OnboardingView()
             }
             .onDisappear { planeNeu() }
             .onChange(of: wochenImpulsAktiv) { planeNeu() }
@@ -196,5 +219,5 @@ struct ErinnerungenView: View {
 // MARK: - Preview
 
 #Preview {
-    ErinnerungenView()
+    EinstellungenView()
 }

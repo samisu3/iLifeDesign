@@ -217,6 +217,23 @@ struct AufgabenListeView: View {
         )
         modelContext.insert(reflexion)
 
+        // Erkenntnis dauerhaft sichern, wenn die Logbuch-Phase abgeschlossen wird:
+        // Die Antwort auf den Erkenntnis-Check (Phase 3, Aufgabe 1 — siehe
+        // addStandardAufgaben) wandert in den Erkenntnis-Speicher.
+        if vorhaben.phase == 3,
+           let erkenntnisText = vorhaben.aufgaben?
+               .first(where: { $0.phase == 3 && $0.sort == 1 })?.antwort
+               .trimmingCharacters(in: .whitespacesAndNewlines),
+           !erkenntnisText.isEmpty {
+            let erkenntnis = ErkenntnisModel(
+                text: erkenntnisText,
+                quelle: vorhaben.bezeichnung,
+                icon: vorhaben.viewLebensbereichIcon,
+                farbeID: vorhaben.lebensbereichRef?.farbeID ?? "blue"
+            )
+            modelContext.insert(erkenntnis)
+        }
+
         withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
             if vorhaben.phase >= PhaseDefaults.count - 1 {
                 // Next Loop: Nach dem Schub startet der Kreislauf neu beim Kompass.

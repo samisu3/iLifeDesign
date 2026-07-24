@@ -19,10 +19,11 @@ struct iLifeDesignApp: App {
             LebensbereichModel.self,
             PhaseModel.self,
             PhaseReflexionModel.self,
+            ErkenntnisModel.self,
         ])
 
         // Aktuelle Schema-Version als String (bei jedem inkompatiblen Umbau erhöhen)
-        let currentSchemaVersion = "v12"
+        let currentSchemaVersion = "v13"
         let schemaVersionKey = "swiftdata_schema_version"
 
         if UserDefaults.standard.string(forKey: schemaVersionKey) != currentSchemaVersion {
@@ -54,10 +55,15 @@ struct iLifeDesignApp: App {
 struct AppRootView: View {
     @Environment(\.modelContext) private var modelContext
 
+    /// Intro bei jedem Start zeigen, bis „Überspringen“ gewählt wird
+    /// (in den Einstellungen wieder aktivierbar).
+    @AppStorage("introBeimStart") private var introBeimStart = true
+    @State private var zeigeIntro = false
+
     var body: some View {
         TabView {
-            PhasenListeView()
-                .tabItem { Label("Phasen", systemImage: "infinity") }
+            ExpeditionView()
+                .tabItem { Label("Expedition", systemImage: "map") }
             LebensbereicheView()
                 .tabItem { Label("Lebensbereiche", systemImage: "circle.hexagonpath") }
             LogbuchView()
@@ -70,6 +76,11 @@ struct AppRootView: View {
             // Diese Funktionen prüfen intern ob Daten schon vorhanden sind.
             setupStandardLebensbereiche(context: modelContext)
             setupStandardPhasen(context: modelContext)
+
+            if introBeimStart { zeigeIntro = true }
+        }
+        .fullScreenCover(isPresented: $zeigeIntro) {
+            OnboardingView()
         }
     }
 }

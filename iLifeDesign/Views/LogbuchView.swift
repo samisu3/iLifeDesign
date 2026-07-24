@@ -14,6 +14,9 @@ struct LogbuchView: View {
     @Query(sort: \PhaseReflexionModel.datum, order: .reverse)
     private var reflexionen: [PhaseReflexionModel]
 
+    @Query(sort: \ErkenntnisModel.datum, order: .reverse)
+    private var erkenntnisse: [ErkenntnisModel]
+
     /// Anzahl aufeinanderfolgender Kalenderwochen mit mindestens einem
     /// Phasenabschluss. Die laufende Woche ohne Aktivität unterbricht
     /// die Serie noch nicht (Verzeihen eingebaut).
@@ -47,7 +50,7 @@ struct LogbuchView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if reflexionen.isEmpty {
+                if reflexionen.isEmpty && erkenntnisse.isEmpty {
                     ContentUnavailableView(
                         "Noch keine Trophäen",
                         systemImage: "trophy",
@@ -57,6 +60,10 @@ struct LogbuchView: View {
                     ScrollView {
                         VStack(spacing: 16) {
                             serienKarte
+
+                            if !erkenntnisse.isEmpty {
+                                erkenntnisseKarte
+                            }
 
                             LazyVGrid(columns: spalten, spacing: 12) {
                                 ForEach(reflexionen) { reflexion in
@@ -116,6 +123,73 @@ struct LogbuchView: View {
         .background {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color(.systemBackground))
+        }
+    }
+
+    // MARK: Erkenntnisse
+
+    private var erkenntnisseKarte: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 6) {
+                Image(systemName: "lightbulb.max.fill")
+                    .font(.caption.bold())
+                    .foregroundStyle(.yellow)
+                Text("DEINE ERKENNTNISSE")
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+                    .kerning(0.5)
+                Spacer()
+                Text("\(erkenntnisse.count)")
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+            }
+
+            ForEach(erkenntnisse) { erkenntnis in
+                ErkenntnisKarte(erkenntnis: erkenntnis)
+            }
+        }
+        .padding(16)
+        .background {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(.systemBackground))
+        }
+    }
+}
+
+// MARK: - Erkenntnis-Karte (auch im Quick-Capture verwendet)
+
+struct ErkenntnisKarte: View {
+    let erkenntnis: ErkenntnisModel
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            ZStack {
+                Circle()
+                    .fill(erkenntnis.viewFarbe.opacity(0.15))
+                    .frame(width: 30, height: 30)
+                Image(systemName: erkenntnis.icon)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(erkenntnis.viewFarbe)
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(erkenntnis.text)
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+                Text("\(erkenntnis.quelle) · \(erkenntnis.viewDatum)")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(erkenntnis.viewFarbe.opacity(0.06))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(erkenntnis.viewFarbe.opacity(0.2), lineWidth: 1)
+                }
         }
     }
 }
@@ -195,11 +269,19 @@ private struct TrophäenKarte: View {
 
 #Preview {
     let container = try! ModelContainer(
-        for: VorhabenModel.self, PhaseReflexionModel.self, LebensbereichModel.self, PhaseModel.self,
+        for: VorhabenModel.self, PhaseReflexionModel.self, LebensbereichModel.self, PhaseModel.self, ErkenntnisModel.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
     )
     let vorhaben = VorhabenModel(bezeichnung: "Neuer Heimweg", icon: "map", phase: 1)
     container.mainContext.insert(vorhaben)
+
+    let erkenntnis = ErkenntnisModel(
+        text: "Abends bin ich zu müde für Neues — morgens klappt es viel besser.",
+        quelle: "Neuer Heimweg",
+        icon: "sparkles",
+        farbeID: "orange"
+    )
+    container.mainContext.insert(erkenntnis)
 
     let kalender = Calendar.current
     let r1 = PhaseReflexionModel(
