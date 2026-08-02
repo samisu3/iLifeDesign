@@ -9,6 +9,16 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - App-weiter Zustand
+
+/// Globaler State für Tab-Navigation und aktives Vorhaben.
+/// Ermöglicht, dass "Mein Leben" den Experimente-Tab mit einem konkreten Vorhaben öffnet.
+@Observable
+final class AppState {
+    var aktivesVorhaben: VorhabenModel?
+    var selectedTab: Int = 0
+}
+
 @main
 struct iLifeDesignApp: App {
 
@@ -23,7 +33,7 @@ struct iLifeDesignApp: App {
         ])
 
         // Aktuelle Schema-Version als String (bei jedem inkompatiblen Umbau erhöhen)
-        let currentSchemaVersion = "v13"
+        let currentSchemaVersion = "v15"
         let schemaVersionKey = "swiftdata_schema_version"
 
         if UserDefaults.standard.string(forKey: schemaVersionKey) != currentSchemaVersion {
@@ -55,28 +65,30 @@ struct iLifeDesignApp: App {
 struct AppRootView: View {
     @Environment(\.modelContext) private var modelContext
 
-    /// Intro bei jedem Start zeigen, bis „Überspringen“ gewählt wird
-    /// (in den Einstellungen wieder aktivierbar).
+    /// Intro bei jedem Start zeigen, bis „Überspringen" gewählt wird
     @AppStorage("introBeimStart") private var introBeimStart = true
     @State private var zeigeIntro = false
+    @State private var appState = AppState()
 
     var body: some View {
-        TabView {
-            ExpeditionView()
-                .tabItem { Label("Expedition", systemImage: "map") }
+        TabView(selection: $appState.selectedTab) {
             LebensbereicheView()
-                .tabItem { Label("Lebensbereiche", systemImage: "circle.hexagonpath") }
+                .tabItem { Label("Mein Leben", systemImage: "house") }
+                .tag(0)
+            ExpeditionView()
+                .tabItem { Label("Experiment", systemImage: "map") }
+                .tag(1)
             LogbuchView()
                 .tabItem { Label("Logbuch", systemImage: "trophy") }
+                .tag(2)
             StatistikView()
                 .tabItem { Label("Statistik", systemImage: "chart.bar.fill") }
+                .tag(3)
         }
+        .environment(appState)
         .onAppear {
-            // Standard-Daten genau einmal beim ersten Start anlegen.
-            // Diese Funktionen prüfen intern ob Daten schon vorhanden sind.
             setupStandardLebensbereiche(context: modelContext)
             setupStandardPhasen(context: modelContext)
-
             if introBeimStart { zeigeIntro = true }
         }
         .fullScreenCover(isPresented: $zeigeIntro) {

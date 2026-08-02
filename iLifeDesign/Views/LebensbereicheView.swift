@@ -2,8 +2,9 @@
 //  LebensbereicheView.swift
 //  iLifeDesign
 //
-//  Created by Sandra Sulzberger on 18.08.2024.
-//  Überarbeitet: 12.07.2026
+//  Puppenhaus-Ansicht: Die 7 Zimmer als gestapelte Etagen.
+//  Der Dachboden hat ein farbiges Dreieck-Dach.
+//  Jedes Vorhaben erscheint als Post-it in seinem Zimmer.
 //
 
 import SwiftUI
@@ -13,98 +14,79 @@ import SwiftData
 
 struct LebensbereicheView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \LebensbereichModel.sort) private var lebensbereiche: [LebensbereichModel]
-    @Query private var alleVorhaben: [VorhabenModel]
+    @Environment(AppState.self) private var appState
+    @Query(sort: \LebensbereichModel.sort) private var zimmer: [LebensbereichModel]
 
-    @State private var newVorhaben = VorhabenModel()
-    @State private var isNewVorhaben = false
     @State private var isNeuerBereich = false
     @State private var neuerBereich: LebensbereichModel?
     @State private var bearbeiteterBereich: LebensbereichModel?
-    @State private var zeigeLeere = true
-
-    private var sichtbareLebensbereiche: [LebensbereichModel] {
-        let liste: [LebensbereichModel]
-        if zeigeLeere {
-            liste = lebensbereiche
-        } else {
-            liste = lebensbereiche.filter { bereich in
-                alleVorhaben.contains { $0.lebensbereichRef?.id == bereich.id }
-            }
-        }
-        return liste.sorted { $0.sort < $1.sort }
-    }
 
     var body: some View {
         NavigationStack {
             Group {
-                if lebensbereiche.isEmpty {
+                if zimmer.isEmpty {
                     ContentUnavailableView(
-                        "Keine Lebensbereiche",
-                        systemImage: "circle.hexagonpath",
-                        description: Text("Tippe auf + um einen Lebensbereich anzulegen.")
+                        "Kein Haus",
+                        systemImage: "house",
+                        description: Text("Die Zimmer werden beim Start automatisch angelegt.")
                     )
                 } else {
                     ScrollView {
-                        LazyVStack(spacing: 16) {
-                            ForEach(sichtbareLebensbereiche) { bereich in
-                                LebensbereichGruppeView(bereich: bereich) {
-                                    bearbeiteterBereich = bereich
-                                } onNeuesVorhaben: {
-                                    let vorhaben = VorhabenModel(lebensbereichRef: bereich)
+                        VStack(spacing: 0) {
+                            ForEach(zimmer) { z in
+                                ZimmerView(
+                                    zimmer: z,
+                                    isDachboden: z.sort == 0
+                                ) {
+                                    let vorhaben = VorhabenModel()
                                     modelContext.insert(vorhaben)
+                                    vorhaben.lebensbereichRef = z
+                                    vorhaben.lebensbereich = z.sort
                                     addStandardAufgaben(vorhaben: vorhaben)
-                                    newVorhaben = vorhaben
-                                    isNewVorhaben = true
+                                    appState.aktivesVorhaben = vorhaben
+                                    appState.selectedTab = 1
+                                } onBearbeiten: {
+                                    bearbeiteterBereich = z
                                 }
                             }
+
+                            // Haus-Sockel
+                            Rectangle()
+                                .fill(Color(.systemGray4))
+                                .frame(height: 10)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
                     }
                     .background(Color(.systemGroupedBackground).ignoresSafeArea())
                 }
             }
-            .navigationTitle("Lebensbereiche")
+            .navigationTitle("Mein Leben")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        withAnimation { zeigeLeere.toggle() }
-                    } label: {
-                        Image(systemName: zeigeLeere ? "eye.fill" : "eye.slash")
-                            .foregroundStyle(zeigeLeere ? .primary : .secondary)
-                    }
-                    .help(zeigeLeere ? "Leere Lebensbereiche ausblenden" : "Leere Lebensbereiche einblenden")
-                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
-                        Button {
-                            let bereich = LebensbereichModel(sort: lebensbereiche.count)
-                            modelContext.insert(bereich)
-                            neuerBereich = bereich
-                            isNeuerBereich = true
-                        } label: {
-                            Label("Neuer Lebensbereich", systemImage: "plus.circle")
-                        }
                         Button {
                             let vorhaben = VorhabenModel()
                             modelContext.insert(vorhaben)
                             addStandardAufgaben(vorhaben: vorhaben)
-                            newVorhaben = vorhaben
-                            isNewVorhaben = true
+                            appState.aktivesVorhaben = vorhaben
+                            appState.selectedTab = 1
                         } label: {
-                            Label("Neues Vorhaben", systemImage: "plus.square")
+                            Label("Neues Experiment", systemImage: "note.text.badge.plus")
+                        }
+                        Divider()
+                        Button {
+                            let bereich = LebensbereichModel(sort: zimmer.count)
+                            modelContext.insert(bereich)
+                            neuerBereich = bereich
+                            isNeuerBereich = true
+                        } label: {
+                            Label("Neues Zimmer", systemImage: "plus.square")
                         }
                     } label: {
                         Image(systemName: "plus")
                     }
                 }
             }
-        }
-        .sheet(isPresented: $isNewVorhaben) {
-            VorhabenEditor(vorhaben: newVorhaben, isNew: true)
-                .interactiveDismissDisabled()
         }
         .sheet(isPresented: $isNeuerBereich) {
             if let bereich = neuerBereich {
@@ -120,134 +102,290 @@ struct LebensbereicheView: View {
     }
 }
 
-// MARK: - Lebensbereich Gruppen-Karte
+// MARK: - Zimmer-Sektion
 
-struct LebensbereichGruppeView: View {
-    @Environment(\.modelContext) private var modelContext
-
-    let bereich: LebensbereichModel
-    var onBearbeiten: () -> Void
+struct ZimmerView: View {
+    let zimmer: LebensbereichModel
+    let isDachboden: Bool
     var onNeuesVorhaben: () -> Void
+    var onBearbeiten: () -> Void
 
-    @State private var istAusgeklappt = true
+    @Environment(AppState.self) private var appState
 
     private var vorhabens: [VorhabenModel] {
-        (bereich.vorhaben ?? []).sorted { $0.priority > $1.priority }
+        (zimmer.vorhaben ?? []).sorted { $0.priority > $1.priority }
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            if isDachboden {
+                dachbodenHeader
+            } else {
+                normalHeader
+            }
+            postItBereich
+        }
+        .overlay(alignment: .leading) {
+            Rectangle()
+                .fill(zimmer.viewFarbe.opacity(0.5))
+                .frame(width: 4)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Color(.systemGray4))
+                .frame(height: 2)
+        }
+        .opacity(zimmer.istAktiv ? 1.0 : 0.55)
+    }
 
-            // MARK: Header
-            Button {
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                    istAusgeklappt.toggle()
+    // MARK: Dachboden-Header: farbiges Dreieck mit Inhalt am unteren Rand
+
+    private var dachbodenHeader: some View {
+        ZStack(alignment: .bottom) {
+            // Dreieck-Füllfläche in der Zimmer-Farbe
+            GeometryReader { geo in
+                Path { path in
+                    path.move(to: CGPoint(x: geo.size.width / 2, y: 0))
+                    path.addLine(to: CGPoint(x: geo.size.width, y: geo.size.height))
+                    path.addLine(to: CGPoint(x: 0, y: geo.size.height))
+                    path.closeSubpath()
                 }
-            } label: {
-                HStack(spacing: 12) {
-                    // Icon
-                    ZStack {
-                        Circle()
-                            .fill(bereich.viewFarbe.opacity(0.18))
-                            .frame(width: 40, height: 40)
-                        Image(systemName: bereich.icon)
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(bereich.viewFarbe)
-                    }
+                .fill(zimmer.viewFarbe.opacity(0.18))
 
-                    // Texte
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack(alignment: .firstTextBaseline, spacing: 6) {
-                            Text(bereich.name)
-                                .fontWeight(.regular)
-                                .foregroundStyle(bereich.istAktiv ? bereich.viewFarbe : .secondary)
+                // Dreieck-Kanten
+                Path { path in
+                    path.move(to: CGPoint(x: geo.size.width / 2, y: 0))
+                    path.addLine(to: CGPoint(x: geo.size.width - 2, y: geo.size.height))
+                    path.move(to: CGPoint(x: geo.size.width / 2, y: 0))
+                    path.addLine(to: CGPoint(x: 2, y: geo.size.height))
+                }
+                .stroke(zimmer.viewFarbe.opacity(0.4), lineWidth: 1.5)
 
-                            Text("(\(vorhabens.count))")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                // Zimmer-Icon in der Dreieck-Spitze
+                Image(systemName: zimmer.icon)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(zimmer.viewFarbe.opacity(0.8))
+                    .position(x: geo.size.width / 2, y: 22)
+            }
 
-                        if !bereich.beschreibung.isEmpty {
-                            Text(bereich.beschreibung)
-                                .font(.caption)
-                                .foregroundStyle(bereich.viewFarbe)
-                                .lineLimit(1)
-                        }
-                    }
-
-                    Spacer()
-
-                    // Aktionen
-                    HStack(spacing: 8) {
-                        // Bearbeiten-Button
-                        Button {
-                            onBearbeiten()
-                        } label: {
-                            Image(systemName: "pencil.circle")
-                                .font(.title3)
-                                .foregroundStyle(bereich.viewFarbe.opacity(0.7))
-                        }
-                        .buttonStyle(.plain)
-
-                        // Vorhaben hinzufügen
-                        Button {
-                            onNeuesVorhaben()
-                        } label: {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.title3)
-                                .foregroundStyle(bereich.viewFarbe)
-                        }
-                        .buttonStyle(.plain)
-
-                        // Aufklapp-Pfeil
-                        Image(systemName: "chevron.down")
-                            .font(.caption.bold())
+            // Inhalt am unteren Rand des Dreiecks
+            HStack(spacing: 10) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(zimmer.name)
+                        .font(.subheadline.bold())
+                        .foregroundStyle(zimmer.viewFarbe)
+                    if !zimmer.beschreibung.isEmpty {
+                        Text(zimmer.beschreibung)
+                            .font(.caption2)
                             .foregroundStyle(.secondary)
-                            .rotationEffect(.degrees(istAusgeklappt ? 0 : -90))
+                            .lineLimit(1)
                     }
+                    EinschaetzungsStreifen(wert: zimmer.einschaetzung, farbe: zimmer.viewFarbe)
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
+
+                Spacer()
+
+                if !vorhabens.isEmpty {
+                    Text("\(vorhabens.count)")
+                        .font(.caption2.bold())
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(zimmer.viewFarbe.opacity(0.7))
+                        .clipShape(Capsule())
+                }
+
+                Button { onBearbeiten() } label: {
+                    Image(systemName: "slider.horizontal.3")
+                        .font(.subheadline)
+                        .foregroundStyle(zimmer.viewFarbe.opacity(0.6))
+                }
+                .buttonStyle(.plain)
+
+                Button { onNeuesVorhaben() } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title3)
+                        .foregroundStyle(zimmer.viewFarbe)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 14)
+            .padding(.bottom, 10)
+        }
+        .frame(height: 110)
+    }
+
+    // MARK: Normaler rechteckiger Header
+
+    private var normalHeader: some View {
+        HStack(spacing: 10) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(zimmer.viewFarbe.opacity(0.20))
+                    .frame(width: 38, height: 38)
+                Image(systemName: zimmer.icon)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(zimmer.viewFarbe)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(zimmer.name)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(zimmer.viewFarbe)
+                if !zimmer.beschreibung.isEmpty {
+                    Text(zimmer.beschreibung)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                EinschaetzungsStreifen(wert: zimmer.einschaetzung, farbe: zimmer.viewFarbe)
+            }
+
+            Spacer()
+
+            if !vorhabens.isEmpty {
+                Text("\(vorhabens.count)")
+                    .font(.caption2.bold())
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(zimmer.viewFarbe.opacity(0.7))
+                    .clipShape(Capsule())
+            }
+
+            Button { onBearbeiten() } label: {
+                Image(systemName: "slider.horizontal.3")
+                    .font(.subheadline)
+                    .foregroundStyle(zimmer.viewFarbe.opacity(0.6))
             }
             .buttonStyle(.plain)
 
-            // MARK: Vorhaben-Liste
-            if istAusgeklappt {
-                Divider()
-                    .padding(.horizontal, 14)
+            Button { onNeuesVorhaben() } label: {
+                Image(systemName: "plus.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(zimmer.viewFarbe)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(zimmer.viewFarbe.opacity(0.10))
+    }
 
-                if vorhabens.isEmpty {
-                    HStack {
-                        Image(systemName: "tray")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text("Noch keine Vorhaben")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .italic()
+    // MARK: Post-it-Bereich
+
+    @ViewBuilder
+    private var postItBereich: some View {
+        if vorhabens.isEmpty {
+            HStack(spacing: 8) {
+                Image(systemName: "note.text")
+                    .font(.caption)
+                    .foregroundStyle(zimmer.viewFarbe.opacity(0.35))
+                Text("Noch keine Experimente – tippe auf + um ein Post-it anzupinnen")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .italic()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(zimmer.viewFarbe.opacity(0.04))
+        } else {
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: 130), spacing: 10)],
+                spacing: 10
+            ) {
+                ForEach(vorhabens) { vorhaben in
+                    Button {
+                        appState.aktivesVorhaben = vorhaben
+                        appState.selectedTab = 1
+                    } label: {
+                        PostItView(vorhaben: vorhaben, zimmerFarbe: zimmer.viewFarbe)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                } else {
-                    VStack(spacing: 6) {
-                        ForEach(vorhabens) { vorhaben in
-                            VorhabenZeile(vorhaben: vorhaben, showPhase: true)
-                        }
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 8)
+                    .buttonStyle(.plain)
                 }
             }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(zimmer.viewFarbe.opacity(0.04))
         }
-        .background {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color(.systemBackground))
-        }
-        .opacity(bereich.istAktiv ? 1.0 : 0.5)
     }
 }
 
-// MARK: - Previews
+// MARK: - Selbsteinschätzungs-Streifen (1–10)
+
+struct EinschaetzungsStreifen: View {
+    let wert: Int   // 1–10
+    let farbe: Color
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(1...10, id: \.self) { i in
+                RoundedRectangle(cornerRadius: 1, style: .continuous)
+                    .fill(i <= wert ? farbe : farbe.opacity(0.15))
+                    .frame(width: 9, height: 4)
+            }
+            Text("\(wert)/10")
+                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                .foregroundStyle(.secondary)
+                .padding(.leading, 2)
+        }
+    }
+}
+
+// MARK: - Post-it Karte
+
+struct PostItView: View {
+    let vorhaben: VorhabenModel
+    let zimmerFarbe: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .top) {
+                Image(systemName: vorhaben.viewIcon)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(zimmerFarbe)
+                Spacer()
+                HStack(spacing: 2) {
+                    ForEach(0..<(vorhaben.priority + 1), id: \.self) { _ in
+                        Circle()
+                            .fill(zimmerFarbe.opacity(0.55))
+                            .frame(width: 5, height: 5)
+                    }
+                }
+            }
+
+            Spacer(minLength: 4)
+
+            Text(vorhaben.bezeichnung.isEmpty ? "Neues Experiment" : vorhaben.bezeichnung)
+                .font(.caption.bold())
+                .foregroundStyle(.primary)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+
+            HStack(spacing: 3) {
+                Image(systemName: vorhaben.viewPhaseIcon)
+                    .font(.system(size: 8))
+                Text(vorhaben.viewPhase)
+                    .font(.caption2)
+            }
+            .foregroundStyle(.secondary)
+        }
+        .padding(10)
+        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 90, alignment: .topLeading)
+        .background {
+            ZStack {
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(zimmerFarbe.opacity(0.18))
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            }
+        }
+        .shadow(color: .black.opacity(0.12), radius: 3, x: 1, y: 2)
+    }
+}
+
+// MARK: - Preview
 
 #Preview {
     LebensbereicheView()

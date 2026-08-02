@@ -64,7 +64,7 @@ extension Color {
     }
 }
 
-// MARK: - Default-Daten: Der 5-Phasen-Expeditions-Loop
+// MARK: - Default-Daten: Der 5-Phasen-Experimente-Loop
 // Schlankes, dynamisches Modell — nach der letzten Phase startet der Kreislauf neu.
 
 struct PhaseDefault {

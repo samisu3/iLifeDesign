@@ -21,6 +21,7 @@ let LebensbereichVerfügbareIcons: [String] = [
     "briefcase.fill", "graduationcap.fill", "books.vertical.fill", "book.fill",
     "pencil", "doc.fill", "chart.bar.fill", "building.columns.fill",
     // Natur & Hobby
+    "fork.knife",
     "leaf.fill", "tree.fill", "gamecontroller.fill", "paintbrush.pointed.fill",
     "camera.fill", "music.note", "theatermasks.fill", "bicycle", "figure.badminton",
     "sailboat.fill", "airplane", "map.fill",
@@ -70,10 +71,9 @@ extension Color {
     }
 }
 
-// MARK: - Default-Daten: Die 5 Lebens-Dimensionen
-// Weiterentwicklung des Life-Design-Modells (Work, Play, Love, Health)
-// ergänzt um den Faktor Rahmen/Fundament (Umfeld).
-// Die Beschreibung ist die Leitfrage der jeweiligen Dimension.
+// MARK: - Default-Daten: Die 7 Zimmer des Hauses
+// Jeder Lebensbereich entspricht einem Zimmer im eigenen Haus —
+// vom Dachboden (Träume & Visionen) bis zum Garten (Fundament & Umfeld).
 
 struct LebensbereichDefault {
     let sort: Int
@@ -84,11 +84,13 @@ struct LebensbereichDefault {
 }
 
 let LebensbereichDefaults: [LebensbereichDefault] = [
-    LebensbereichDefault(sort: 0, name: "Vitalität",    beschreibung: "Wie stark ist mein innerer Akku geladen?",              icon: "bolt.heart.fill", farbeID: "green"),
-    LebensbereichDefault(sort: 1, name: "Wirkung",      beschreibung: "Wo bringe ich meine Stärken ein und bewirke etwas?",    icon: "briefcase.fill",  farbeID: "blue"),
-    LebensbereichDefault(sort: 2, name: "Experimente",  beschreibung: "Wo probiere ich mich zweckfrei aus und lerne Neues?",   icon: "sparkles",        farbeID: "orange"),
-    LebensbereichDefault(sort: 3, name: "Verbindung",   beschreibung: "Welche Beziehungen schenken mir Kraft und Halt?",       icon: "person.2.fill",   farbeID: "pink"),
-    LebensbereichDefault(sort: 4, name: "Umfeld",       beschreibung: "Gibt mir mein Umfeld Freiheit, Stabilität und Sicherheit?", icon: "house.fill",  farbeID: "teal"),
+    LebensbereichDefault(sort: 0, name: "Dachboden",       beschreibung: "Grosse Lebensziele & Fernweh-Ideen",           icon: "sparkles",               farbeID: "brown"),
+    LebensbereichDefault(sort: 1, name: "Arbeitszimmer",   beschreibung: "Beruf, Fokus & kreatives Handwerk",            icon: "briefcase.fill",         farbeID: "blue"),
+    LebensbereichDefault(sort: 2, name: "Hobbyraum",       beschreibung: "Experimente & freie Entfaltung ohne Druck",    icon: "paintbrush.pointed.fill", farbeID: "orange"),
+    LebensbereichDefault(sort: 3, name: "Wohnzimmer",      beschreibung: "Beziehungen, Werte & Gemeinschaft",            icon: "sofa.fill",              farbeID: "yellow"),
+    LebensbereichDefault(sort: 4, name: "Badezimmer",      beschreibung: "Mentale Hygiene & Selbstfürsorge",             icon: "bathtub.fill",           farbeID: "mint"),
+    LebensbereichDefault(sort: 5, name: "Küche",           beschreibung: "Vitalität, Energie & Ernährung",               icon: "fork.knife",             farbeID: "green"),
+    LebensbereichDefault(sort: 6, name: "Garten & Veranda",beschreibung: "Zuhause, Umfeld & finanzielles Fundament",     icon: "leaf.fill",              farbeID: "teal"),
 ]
 
 // MARK: - SwiftData Model

@@ -61,7 +61,7 @@ struct VorhabenEditor: View {
                     TextField("Beschreibung", text: $vorhaben.beschreibung, axis: .vertical)
                         .lineLimit(2...6)
                 } header: {
-                    Text("Vorhaben")
+                    Text("Experiment")
                 }
 
                 // ── Priorität & Lebensbereich ────────────────────────────
@@ -232,14 +232,14 @@ struct VorhabenEditor: View {
                         } label: {
                             HStack {
                                 Spacer()
-                                Label("Vorhaben löschen", systemImage: "trash")
+                                Label("Experiment löschen", systemImage: "trash")
                                 Spacer()
                             }
                         }
                     }
                 }
             }
-            .navigationTitle(isNew ? "Neues Vorhaben" : "Vorhaben bearbeiten")
+            .navigationTitle(isNew ? "Neues Experiment" : "Experiment bearbeiten")
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(isPresented: $zeigeAufgaben) {
                 AufgabenListeView(vorhaben: vorhaben)
@@ -263,14 +263,14 @@ struct VorhabenEditor: View {
         .sheet(isPresented: $isPickingSymbol) {
             SymbolPickerView(vorhaben: vorhaben)
         }
-        .alert("Vorhaben löschen", isPresented: $showDeleteAlert) {
+        .alert("Experiment löschen", isPresented: $showDeleteAlert) {
             Button("Löschen", role: .destructive) {
                 modelContext.delete(vorhaben)
                 dismiss()
             }
             Button("Abbrechen", role: .cancel) {}
         } message: {
-            Text("Dieses Vorhaben wird unwiderruflich gelöscht.")
+            Text("Dieses Experiment wird unwiderruflich gelöscht.")
         }
     }
     

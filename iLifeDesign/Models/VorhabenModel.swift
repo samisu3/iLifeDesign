@@ -92,6 +92,8 @@ class VorhabenModel {
     var phase: Int = 0
     var priority: Int = 0
     var beschreibung: String = ""
+    /// Zählt wie oft alle 5 Phasen durchlaufen wurden. Startet bei 1.
+    var iteration: Int = 1
     /// Veraltetes Int-Feld – bleibt für Migration erhalten, wird aber nicht mehr aktiv genutzt.
     var lebensbereich: Int = 0
     /// Neue Beziehung zum LebensbereichModel

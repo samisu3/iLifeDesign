@@ -14,6 +14,7 @@ struct StatistikView: View {
     @Query private var alleVorhaben: [VorhabenModel]
     @Query(sort: \PhaseModel.sort) private var phasen: [PhaseModel]
     @Query(sort: \LebensbereichModel.sort) private var lebensbereiche: [LebensbereichModel]
+    @State private var zeigeEinstellungen = false
 
     private var total: Int { alleVorhaben.count }
 
@@ -145,7 +146,15 @@ struct StatistikView: View {
             .background(Color(.systemGroupedBackground).ignoresSafeArea())
             .navigationTitle("Statistik")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button { zeigeEinstellungen = true } label: {
+                        Image(systemName: "gearshape")
+                    }
+                }
+            }
         }
+        .sheet(isPresented: $zeigeEinstellungen) { EinstellungenView() }
     }
 }
 

@@ -242,6 +242,7 @@ struct AufgabenListeView: View {
                     aufgabe.antwort = ""
                     aufgabe.erledigt = false
                 }
+                vorhaben.iteration += 1
                 vorhaben.phase = 0
             } else {
                 vorhaben.phase += 1

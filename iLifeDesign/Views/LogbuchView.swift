@@ -217,7 +217,7 @@ private struct TrophäenKarte: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(reflexion.vorhaben?.bezeichnung ?? "Vorhaben")
+                Text(reflexion.vorhaben?.bezeichnung ?? "Experiment")
                     .font(.subheadline.bold())
                     .foregroundStyle(.primary)
                     .lineLimit(1)

@@ -4,18 +4,38 @@
 //
 //  Intro beim App-Start: erklärt das Konzept — Ideen sammeln und
 //  als kleine Experimente (Prototyping) umsetzen. Wird bei jedem Start
-//  gezeigt, bis „Überspringen“ gewählt wird; in den Einstellungen
+//  gezeigt, bis „Überspringen" gewählt wird; in den Einstellungen
 //  jederzeit wieder aktivierbar.
 //
 
 import SwiftUI
+import SwiftData
 
 struct OnboardingView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage("introBeimStart") private var introBeimStart = true
 
+    @Query(sort: \LebensbereichModel.sort) private var lebensbereiche: [LebensbereichModel]
+    @Query(sort: \PhaseModel.sort) private var phasen: [PhaseModel]
+
     @State private var seite = 0
     private let letzteSeite = 3
+
+    // Fallback auf Defaults wenn DB noch nicht initialisiert
+    private var lebensbereichItems: [(icon: String, farbe: Color, name: String)] {
+        let quelle = lebensbereiche.filter { $0.istAktiv }
+        if quelle.isEmpty {
+            return LebensbereichDefaults.map { ($0.icon, Color.fromLebensbereichID($0.farbeID), $0.name) }
+        }
+        return quelle.map { ($0.icon, $0.viewFarbe, $0.name) }
+    }
+
+    private var phasenItems: [(icon: String, farbe: Color, name: String)] {
+        if phasen.isEmpty {
+            return PhaseDefaults.map { ($0.icon, Color.fromPhaseID($0.farbeID), $0.name) }
+        }
+        return phasen.map { ($0.icon, $0.viewFarbe, $0.name) }
+    }
 
     var body: some View {
         ZStack {
@@ -68,7 +88,7 @@ struct OnboardingView: View {
                 .buttonStyle(.plain)
                 .padding(.horizontal, 24)
 
-                Text("„Überspringen“ blendet das Intro dauerhaft aus — Du findest es jederzeit in den Einstellungen wieder.")
+                Text("\"Überspringen\" blendet das Intro dauerhaft aus — Du findest es jederzeit in den Einstellungen wieder.")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
                     .multilineTextAlignment(.center)
@@ -88,7 +108,6 @@ struct OnboardingView: View {
             titel: "Sammle Deine Ideen",
             text: "Jede Veränderung beginnt mit einer Idee. Halte sie fest, sobald sie auftaucht — ein Satz genügt. Alles Weitere kommt später."
         ) {
-            // Mini-Vorschau des Ideen-Kärtchens
             HStack(spacing: 10) {
                 Image(systemName: "plus.circle.fill")
                     .font(.title3)
@@ -109,48 +128,42 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: Seite 2 — Die 5 Dimensionen
+    // MARK: Seite 2 — Lebensbereiche (live aus DB)
 
     private var dimensionenSeite: some View {
         OnboardingSeite(
-            icon: "circle.hexagonpath.fill",
+            icon: "house.fill",
             farbe: .teal,
             titel: "Behalte Deine Balance",
-            text: "Fünf Dimensionen zeigen Dir auf einen Blick, wo Du gerade experimentierst — und wo noch Platz für Neues ist."
+            text: "Deine Lebensbereiche zeigen Dir auf einen Blick, wo Du gerade experimentierst — und wo noch Platz für Neues ist."
         ) {
-            VStack(spacing: 8) {
-                HStack(spacing: 8) {
-                    OnboardingChip(name: "Vitalität", icon: "bolt.heart.fill", farbe: .green)
-                    OnboardingChip(name: "Wirkung", icon: "briefcase.fill", farbe: .blue)
-                    OnboardingChip(name: "Experimente", icon: "sparkles", farbe: .orange)
-                }
-                HStack(spacing: 8) {
-                    OnboardingChip(name: "Verbindung", icon: "person.2.fill", farbe: .pink)
-                    OnboardingChip(name: "Umfeld", icon: "house.fill", farbe: .teal)
+            let items = lebensbereichItems
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: 100), spacing: 8)],
+                spacing: 8
+            ) {
+                ForEach(0..<items.count, id: \.self) { i in
+                    OnboardingChip(name: items[i].name, icon: items[i].icon, farbe: items[i].farbe)
                 }
             }
         }
     }
 
-    // MARK: Seite 3 — Der Prototyping-Loop
+    // MARK: Seite 3 — Der Prototyping-Loop (live Phasen)
 
     private var prototypingSeite: some View {
         OnboardingSeite(
             icon: "arrow.triangle.2.circlepath",
             farbe: .purple,
             titel: "Teste klein statt gross zu planen",
-            text: "Deine Idee wird zum kleinen Experiment: Fokus schärfen, Prototyp planen, im Alltag ausprobieren, Bilanz ziehen — und mit Schwung in die nächste Runde."
+            text: "Deine Idee wird zum kleinen Experiment: Fokus schärfen, Entwurf machen, ausprobieren, Bilanz ziehen — und mit Schwung in die nächste Runde."
         ) {
-            HStack(spacing: 10) {
-                OnboardingPhasenIcon(icon: "safari", farbe: .blue)
-                pfeil
-                OnboardingPhasenIcon(icon: "lightbulb.max", farbe: .yellow)
-                pfeil
-                OnboardingPhasenIcon(icon: "figure.run", farbe: .green)
-                pfeil
-                OnboardingPhasenIcon(icon: "book", farbe: .indigo)
-                pfeil
-                OnboardingPhasenIcon(icon: "arrow.triangle.2.circlepath", farbe: .purple)
+            let items = phasenItems
+            HStack(spacing: 4) {
+                ForEach(0..<items.count, id: \.self) { i in
+                    if i > 0 { pfeil }
+                    OnboardingPhasenIcon(icon: items[i].icon, farbe: items[i].farbe, name: items[i].name)
+                }
             }
         }
     }
@@ -246,10 +259,12 @@ private struct OnboardingChip: View {
                 .font(.caption)
             Text(name)
                 .font(.caption.bold())
+                .lineLimit(1)
         }
         .foregroundStyle(farbe)
-        .padding(.horizontal, 12)
+        .padding(.horizontal, 10)
         .padding(.vertical, 8)
+        .frame(maxWidth: .infinity)
         .background { Capsule().fill(farbe.opacity(0.12)) }
     }
 }
@@ -257,15 +272,26 @@ private struct OnboardingChip: View {
 private struct OnboardingPhasenIcon: View {
     let icon: String
     let farbe: Color
+    var name: String = ""
 
     var body: some View {
-        ZStack {
-            Circle()
-                .fill(farbe.opacity(0.15))
-                .frame(width: 40, height: 40)
-            Image(systemName: icon)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(farbe)
+        VStack(spacing: 4) {
+            ZStack {
+                Circle()
+                    .fill(farbe.opacity(0.15))
+                    .frame(width: 38, height: 38)
+                Image(systemName: icon)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(farbe)
+            }
+            if !name.isEmpty {
+                Text(name)
+                    .font(.system(size: 8, weight: .medium))
+                    .foregroundStyle(farbe)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .frame(width: 52)
+            }
         }
     }
 }
@@ -274,4 +300,5 @@ private struct OnboardingPhasenIcon: View {
 
 #Preview {
     OnboardingView()
+        .modelContainer(VorhabenModel.preview)
 }
